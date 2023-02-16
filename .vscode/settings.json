@@ -1,0 +1,32 @@
+{
+  "files.watcherExclude": {
+    "**/venv": true
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": false,
+  "python.linting.enabled": true,
+  "python.formatting.provider": "black",
+  "python.formatting.blackPath": "black",
+  "python.formatting.blackArgs": ["--line-length", "100"],
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.formatAll.terraform": true
+    }
+  },
+  "[terraform-vars]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.formatAll.terraform": true
+    }
+  }
+}
