@@ -1,0 +1,19 @@
+seller_id,product,quantity,product_price,sales_date
+LNK,Toothbrush,22,3.99,2021-07-01
+LNK,Dental Floss,17,1.99,2021-07-01
+LNK,Toothpaste,8,4.99,2021-07-01
+OMA,Toothbrush,29,3.99,2021-07-01
+OMA,Toothpaste,9,4.99,2021-07-01
+OMA,Dental Floss,23,1.99,2021-07-01
+LNK,Toothbrush,25,3.99,2021-07-02
+LNK,Dental Floss,16,1.99,2021-07-02
+LNK,Toothpaste,9,4.99,2021-07-02
+OMA,Toothbrush,32,3.99,2021-07-02
+OMA,Toothpaste,13,4.99,2021-07-02
+OMA,Dental Floss,18,1.99,2021-07-02
+LNK,Toothbrush,20,3.99,2021-07-03
+LNK,Dental Floss,15,1.99,2021-07-03
+LNK,Toothpaste,11,4.99,2021-07-03
+OMA,Toothbrush,31,3.99,2021-07-03
+OMA,Toothpaste,10,4.99,2021-07-03
+OMA,Dental Floss,21,1.99,2021-07-03
