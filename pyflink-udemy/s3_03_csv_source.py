@@ -1,6 +1,4 @@
-from pyflink.table import EnvironmentSettings, TableEnvironment
-from pyflink.table.sources import CsvTableSource
-from pyflink.table.types import DataTypes
+from pyflink.table import EnvironmentSettings, TableEnvironment, DataTypes, CsvTableSource
 
 tbl_env = TableEnvironment.create(EnvironmentSettings.in_batch_mode())
 

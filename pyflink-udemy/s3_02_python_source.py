@@ -1,5 +1,4 @@
-from pyflink.table import EnvironmentSettings, TableEnvironment
-from pyflink.table.types import DataTypes
+from pyflink.table import EnvironmentSettings, TableEnvironment, DataTypes
 
 tbl_env = TableEnvironment.create(EnvironmentSettings.in_batch_mode())
 
