@@ -40,7 +40,7 @@ tbl = table_env.from_path("sales_items")
 print("\nsource schema")
 tbl.print_schema()
 
-# tumbling window aggregate calculation of revenue per seller
+# sliding window aggregate calculation of revenue per seller
 windowed_rev = table_env.sql_query(
     """
     SELECT
