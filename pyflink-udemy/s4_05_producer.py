@@ -10,9 +10,9 @@ from kafka import KafkaProducer
 class Sales:
     def __init__(self):
         self.products = [
-            {"name": "Toothpaste", "price": 4.99},
-            {"name": "Toothbrush", "price": 3.99},
-            {"name": "Dental Floss", "price": 1.99},
+            {"name": "Toothpaste", "product_price": 4.99},
+            {"name": "Toothbrush", "product_price": 3.99},
+            {"name": "Dental Floss", "product_price": 1.99},
         ]
         self.sellers = ["LNK", "OMA", "KC", "DEN"]
 
