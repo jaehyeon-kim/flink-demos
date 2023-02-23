@@ -21,7 +21,7 @@ class Sales:
             **{
                 "seller_id": random.choice(self.sellers),
                 "quantity": random.randint(1, 5),
-                "sales_ts": int(time.time() * 1000),
+                "sale_ts": int(time.time() * 1000),
             },
             **random.choice(self.products),
         }
