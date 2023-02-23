@@ -14,6 +14,7 @@ table_env = TableEnvironment.create(env_settings)
 # https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/dev/python/dependency_management/
 kafka_jar = os.path.join(os.path.abspath(os.path.dirname(__file__)), FLINK_SQL_CONNECTOR_KAFKA)
 table_env.get_config().set("pipeline.jars", f"file://{kafka_jar}")
+table_env.get_config().set("table.exec.source.idle-timeout", "1000")
 
 ## create kafka source table
 table_env.execute_sql(
@@ -26,7 +27,7 @@ table_env.execute_sql(
         `sale_ts` BIGINT,
         `proctime` AS PROCTIME(),
         `evttime` AS TO_TIMESTAMP_LTZ(`sale_ts`, 3),
-        WATERMARK FOR `evttime` AS `evttime` - INTERVAL '1' SECOND
+        WATERMARK FOR `evttime` AS `evttime` - INTERVAL '5' SECOND
     ) WITH (
         'connector' = 'kafka',
         'topic' = 'sales_items',
@@ -45,7 +46,7 @@ tbl.print_schema()
 
 ## tumbling window aggregate calculation of revenue per seller
 windowed_rev = (
-    tbl.window(Tumble.over(lit(5).seconds).on(col("evttime")).alias("w"))
+    tbl.window(Tumble.over(lit(20).seconds).on(col("evttime")).alias("w"))
     .group_by(col("w"), col("seller_id"))
     .select(
         col("seller_id"),
