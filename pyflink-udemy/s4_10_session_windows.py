@@ -4,9 +4,11 @@ from pyflink.table import EnvironmentSettings, TableEnvironment
 from pyflink.table.expressions import lit, col
 from pyflink.table.window import Session
 
-BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS", "localhost:9093")
+BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS", "localhost:29092")
 # https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/connectors/table/kafka/
-FLINK_SQL_CONNECTOR_KAFKA = "flink-sql-connector-kafka-1.16.0.jar"
+version_map = {"15": "1.15.4", "16": "1.16.0"}
+FLINK_VERSION = version_map[os.getenv("MINOR_VERSION", "15")]
+FLINK_SQL_CONNECTOR_KAFKA = f"flink-sql-connector-kafka-{FLINK_VERSION}.jar"
 
 env_settings = EnvironmentSettings.in_streaming_mode()
 table_env = TableEnvironment.create(env_settings)

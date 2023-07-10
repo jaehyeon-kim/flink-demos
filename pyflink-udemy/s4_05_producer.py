@@ -57,7 +57,7 @@ class Producer:
 
 if __name__ == "__main__":
     producer = Producer(
-        bootstrap_servers=os.getenv("BOOTSTRAP_SERVERS", "localhost:9093").split(","),
+        bootstrap_servers=os.getenv("BOOTSTRAP_SERVERS", "localhost:29092").split(","),
         topic=os.getenv("TOPIC_NAME", "sales_items"),
     )
 
