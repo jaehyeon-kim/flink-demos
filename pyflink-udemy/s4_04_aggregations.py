@@ -16,8 +16,9 @@ source = CsvTableSource("./csv-input", field_names, field_types, ignore_first_li
 tbl_env.register_table_source("product_locale_sales", source)
 tbl = tbl_env.from_path("product_locale_sales")
 
-tbl.offset(16).execute().print()
-tbl.fetch(8).execute().print()
+tbl.order_by(col("quantity").asc).execute().print()
+tbl.order_by(col("quantity").asc).offset(1).fetch(2).execute().print()
+tbl.order_by(col("quantity").asc).fetch(8).execute().print()
 
 avg_price = (
     tbl.select(col("product_price")).distinct().select(col("product_price").avg.alias("avg_price"))

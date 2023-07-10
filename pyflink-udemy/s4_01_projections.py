@@ -24,7 +24,7 @@ redundant_prices2 = tbl_env.sql_query(
     f"SELECT product, product_price As price FROM product_locale_sales"
 )
 print("\nredundant_prices2 data")
-redundant_prices.execute().print()
+redundant_prices2.execute().print()
 
 distinct_prices = tbl.select(col("product"), col("product_price").alias("price")).distinct()
 print("\ndistinct_prices data")
