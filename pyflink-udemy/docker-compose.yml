@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   zookeeper:
-    image: docker.io/bitnami/zookeeper:3.8
+    image: bitnami/zookeeper:3.5
     container_name: zookeeper
     ports:
       - "2181"
@@ -13,64 +13,70 @@ services:
     volumes:
       - zookeeper_data:/bitnami/zookeeper
   kafka-0:
-    image: docker.io/bitnami/kafka:3.3
+    image: bitnami/kafka:2.8.1
     container_name: kafka-0
     expose:
       - 9092
     ports:
-      - "9093:9093"
+      - "29092:29092"
     networks:
       - kafkanet
     environment:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_CFG_BROKER_ID=0
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka-0:9092,EXTERNAL://localhost:9093
-      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,EXTERNAL://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_NUM_PARTITIONS=3
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
     volumes:
       - kafka_0_data:/bitnami/kafka
     depends_on:
       - zookeeper
   kafka-1:
-    image: docker.io/bitnami/kafka:3.3
+    image: bitnami/kafka:2.8.1
     container_name: kafka-1
     expose:
       - 9092
     ports:
-      - "9094:9094"
+      - "29093:29093"
     networks:
       - kafkanet
     environment:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_CFG_BROKER_ID=1
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka-1:9092,EXTERNAL://localhost:9094
-      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,EXTERNAL://:29093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-1:9092,EXTERNAL://localhost:29093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_NUM_PARTITIONS=3
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
     volumes:
       - kafka_1_data:/bitnami/kafka
     depends_on:
       - zookeeper
   kafka-2:
-    image: docker.io/bitnami/kafka:3.3
+    image: bitnami/kafka:2.8.1
     container_name: kafka-2
     expose:
       - 9092
     ports:
-      - "9095:9095"
+      - "29094:29094"
     networks:
       - kafkanet
     environment:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_CFG_BROKER_ID=2
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9095
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka-2:9092,EXTERNAL://localhost:9095
-      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,EXTERNAL://:29094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-2:9092,EXTERNAL://localhost:29094
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_NUM_PARTITIONS=3
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=3
     volumes:
       - kafka_2_data:/bitnami/kafka
     depends_on:
@@ -99,9 +105,13 @@ networks:
 volumes:
   zookeeper_data:
     driver: local
+    name: zookeeper_data
   kafka_0_data:
     driver: local
+    name: kafka_0_data
   kafka_1_data:
     driver: local
+    name: kafka_1_data
   kafka_2_data:
     driver: local
+    name: kafka_2_data
