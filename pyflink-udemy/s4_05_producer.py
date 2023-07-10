@@ -10,9 +10,9 @@ from kafka import KafkaProducer
 class Sales:
     def __init__(self):
         self.products = [
-            {"name": "Toothpaste", "product_price": 4.99},
-            {"name": "Toothbrush", "product_price": 3.99},
-            {"name": "Dental Floss", "product_price": 1.99},
+            {"product": "Toothpaste", "product_price": 4.99},
+            {"product": "Toothbrush", "product_price": 3.99},
+            {"product": "Dental Floss", "product_price": 1.99},
         ]
         self.sellers = ["LNK", "OMA", "KC", "DEN"]
 
@@ -64,5 +64,6 @@ if __name__ == "__main__":
     while True:
         sales_items = Sales().create(10)
         producer.send(sales_items)
-        print("messages sent...")
-        time.sleep(5)
+        secs = random.randint(5, 10)
+        print(f"messages sent... wait {secs} seconds")
+        time.sleep(secs)

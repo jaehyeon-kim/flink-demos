@@ -1,4 +1,4 @@
-## S3 04
+## S3
 docker exec -it kafka-0 bash
 cd /opt/bitnami/kafka/bin/
 
@@ -32,3 +32,8 @@ docker run --rm -it --network kafka-network bitnami/kafka:2.8.1 \
 docker run --rm -it --network kafka-network bitnami/kafka:2.8.1 \
   /opt/bitnami/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server kafka-0:9092 --topic product_sales --from-beginning
+
+## S4
+docker run --rm -it --network kafka-network bitnami/kafka:2.8.1 \
+  /opt/bitnami/kafka/bin/kafka-topics.sh \
+  --bootstrap-server kafka-0:9092 --create --topic sales_items

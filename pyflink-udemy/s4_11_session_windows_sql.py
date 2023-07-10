@@ -47,12 +47,12 @@ windowed_rev = table_env.sql_query(
     """
     SELECT
         seller_id,
-        SESSION_START(proctime, INTERVAL '20' SECONDS) AS window_start,
-        SESSION_END(proctime, INTERVAL '20' SECONDS) AS window_end,
+        SESSION_START(proctime, INTERVAL '5' SECONDS) AS window_start,
+        SESSION_END(proctime, INTERVAL '5' SECONDS) AS window_end,
         SUM(quantity * product_price) AS window_sales
     FROM sales_items
     GROUP BY
-        SESSION(proctime, INTERVAL '20' SECONDS), seller_id
+        SESSION(proctime, INTERVAL '5' SECONDS), seller_id
     """
 )
 print("\nprocess sink schema")

@@ -44,7 +44,7 @@ tbl.print_schema()
 
 # session window aggregate calculation of revenue per seller
 windowed_rev = (
-    tbl.window(Session.with_gap(lit(20).seconds).on(col("proctime")).alias("w"))
+    tbl.window(Session.with_gap(lit(5).seconds).on(col("proctime")).alias("w"))
     .group_by(col("w"), col("seller_id"))
     .select(
         col("seller_id"),

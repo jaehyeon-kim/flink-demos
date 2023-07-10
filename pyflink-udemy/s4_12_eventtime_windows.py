@@ -48,7 +48,7 @@ tbl.print_schema()
 
 ## tumbling window aggregate calculation of revenue per seller
 windowed_rev = (
-    tbl.window(Tumble.over(lit(20).seconds).on(col("evttime")).alias("w"))
+    tbl.window(Tumble.over(lit(10).seconds).on(col("evttime")).alias("w"))
     .group_by(col("w"), col("seller_id"))
     .select(
         col("seller_id"),
