@@ -6,6 +6,8 @@
 *-demo-data
 pyflink-udemy/flink-sql-connector-kafka-*.jar
 pyflink-udemy/revenue.csv
+amazon-pyflink-getting-started
+amazon-kinesis-data-analytics-examples
 
 ## sam
 .aws-sam*
