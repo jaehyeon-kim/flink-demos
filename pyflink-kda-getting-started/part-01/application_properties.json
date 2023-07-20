@@ -13,7 +13,7 @@
       "table.name": "source_table",
       "topic.name": "stocks-in",
       "bootstrap.servers": "localhost:29092",
-      "startup.mode": "group-offsets"
+      "startup.mode": "earliest-offset"
     }
   },
   {

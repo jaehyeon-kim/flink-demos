@@ -1,0 +1,57 @@
+version: "3.5"
+
+services:
+  jobmanager:
+    image: pyflink:1.15.2-scala_2.12
+    container_name: jobmanager
+    command: jobmanager
+    ports:
+      - "8081:8081"
+    networks:
+      - kafkanet
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+        rest.flamegraph.enabled: true
+        web.backpressure.refresh-interval: 10000
+      - IS_LOCAL_KAFKA=true
+      - IS_LOCAL_FLINK=false
+    volumes:
+      - $PWD:/tmp/pyflink:ro
+  taskmanager:
+    image: pyflink:1.15.2-scala_2.12
+    container_name: taskmanager
+    command: taskmanager
+    networks:
+      - kafkanet
+    volumes:
+      - flink_data:/tmp/
+      - $PWD:/tmp/pyflink:ro
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 3
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+      - IS_LOCAL_KAFKA=true
+      - IS_LOCAL_FLINK=false
+    depends_on:
+      - jobmanager
+
+networks:
+  kafkanet:
+    external: true
+    name: kafka-network
+
+volumes:
+  flink_data:
+    driver: local
+    name: flink_data

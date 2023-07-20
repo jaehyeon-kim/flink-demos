@@ -11,7 +11,7 @@ env_settings = EnvironmentSettings.in_streaming_mode()
 table_env = TableEnvironment.create(env_settings)
 
 APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"  # on kda
-if IS_LOCAL_KAFKA or IS_LOCAL_FLINK:
+if IS_LOCAL_KAFKA:
     APPLICATION_PROPERTIES_FILE_PATH = "application_properties.json"  # local
     # on local, multiple jar files can be passed after being delimited by a semicolon
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -42,17 +42,15 @@ def create_source_table(
 ):
     return f"""
     CREATE TABLE {table_name} (
-        ticker VARCHAR(6),
-        price DOUBLE,
         event_time TIMESTAMP(3),
-        WATERMARK FOR event_time AS event_time - INTERVAL '5' SECOND    
+        ticker VARCHAR(6),
+        price DOUBLE
     )
-    PARTITIONED BY (ticker)
     WITH (
         'connector' = 'kafka',
         'topic' = '{topic_name}',
         'properties.bootstrap.servers' = '{bootstrap_servers}',
-        'properties.group.id' = 'ticker-source',
+        'properties.group.id' = 'source-group',
         'format' = 'json',
         'scan.startup.mode' = '{startup_mode}'
     )
@@ -62,17 +60,18 @@ def create_source_table(
 def create_sink_table(table_name: str, topic_name: str, bootstrap_servers: str):
     return f"""
     CREATE TABLE {table_name} (
-        ticker VARCHAR(6),
-        price DOUBLE,
         event_time TIMESTAMP(3),
-        WATERMARK FOR event_time AS event_time - INTERVAL '5' SECOND    
+        ticker VARCHAR(6),
+        price DOUBLE
     )
-    PARTITIONED BY (ticker)
     WITH (
         'connector' = 'kafka',
         'topic' = '{topic_name}',
-        'properties.bootstrap.servers' = '{bootstrap_servers}',
-        'format' = 'json'
+        'properties.bootstrap.servers' = '{bootstrap_servers}',        
+        'format' = 'json',
+        'key.format' = 'json',
+        'key.fields' = 'ticker',
+        'sink.partitioner' = 'fixed'
     )
     """
 
@@ -80,12 +79,10 @@ def create_sink_table(table_name: str, topic_name: str, bootstrap_servers: str):
 def create_print_table(table_name: str):
     return f"""
     CREATE TABLE {table_name} (
-        ticker VARCHAR(6),
-        price DOUBLE,
         event_time TIMESTAMP(3),
-        WATERMARK FOR event_time AS event_time - INTERVAL '5' SECOND    
+        ticker VARCHAR(6),
+        price DOUBLE
     )
-    PARTITIONED BY (ticker)
     WITH (
         'connector' = 'print'
     )
