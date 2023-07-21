@@ -1,0 +1,29 @@
+[
+  {
+    "PropertyGroupId": "kinesis.analytics.flink.run.options",
+    "PropertyMap": {
+      "python": "processor.py",
+      "jarfile": "lib/flink-sql-connector-kinesis-1.15.2.jar",
+      "pyFiles": "site_packages/"
+    }
+  },
+  {
+    "PropertyGroupId": "consumer.config.0",
+    "PropertyMap": {
+      "table.name": "source_table",
+      "topic.name": "stocks-in",
+      "bootstrap.servers": "kafka-0:9092",
+      "bootstrap.external.servers": "localhost:29092",
+      "startup.mode": "earliest-offset"
+    }
+  },
+  {
+    "PropertyGroupId": "producer.config.0",
+    "PropertyMap": {
+      "table.name": "sink_table",
+      "topic.name": "stocks-out",
+      "bootstrap.servers": "kafka-0:9092",
+      "bootstrap.external.servers": "localhost:29092"
+    }
+  }
+]
