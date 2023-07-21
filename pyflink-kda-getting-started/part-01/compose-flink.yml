@@ -19,10 +19,9 @@ services:
         heartbeat.timeout: 5000
         rest.flamegraph.enabled: true
         web.backpressure.refresh-interval: 10000
-      - IS_LOCAL_KAFKA=true
-      - IS_LOCAL_FLINK=false
+      - RUNTIME_ENV=DOCKER
     volumes:
-      - $PWD:/tmp/pyflink:ro
+      - $PWD:/etc/flink
   taskmanager:
     image: pyflink:1.15.2-scala_2.12
     container_name: taskmanager
@@ -31,7 +30,7 @@ services:
       - kafkanet
     volumes:
       - flink_data:/tmp/
-      - $PWD:/tmp/pyflink:ro
+      - $PWD:/etc/flink
     environment:
       - |
         FLINK_PROPERTIES=
@@ -41,8 +40,7 @@ services:
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         heartbeat.interval: 1000
         heartbeat.timeout: 5000
-      - IS_LOCAL_KAFKA=true
-      - IS_LOCAL_FLINK=false
+      - RUNTIME_ENV=DOCKER
     depends_on:
       - jobmanager
 

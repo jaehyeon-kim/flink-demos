@@ -1,24 +1,41 @@
 import os
 import json
+import logging
 
 from pyflink.table import EnvironmentSettings, TableEnvironment
 
-IS_LOCAL_KAFKA = os.environ.get("IS_LOCAL_KAFKA") is not None
-IS_LOCAL_FLINK = os.environ.get("IS_LOCAL_FLINK") is not None
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "KDA")  # KDA, DOCKER, LOCAL
 FLINK_VERSION = os.environ.get("FLINK_VERSION", "1.15.2")
+
+logging.info(f"runtime environment - {RUNTIME_ENV}...")
 
 env_settings = EnvironmentSettings.in_streaming_mode()
 table_env = TableEnvironment.create(env_settings)
 
-APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"  # on kda
-if IS_LOCAL_KAFKA:
-    APPLICATION_PROPERTIES_FILE_PATH = "application_properties.json"  # local
-    # on local, multiple jar files can be passed after being delimited by a semicolon
+APPLICATION_PROPERTIES_FILE_PATH = (
+    "/etc/flink/application_properties.json"  # on kda or docker-compose
+)
+
+APPLICATION_PROPERTIES_FILE_PATH = (
+    "/etc/flink/application_properties.json"
+    if RUNTIME_ENV != "LOCAL"
+    else "application_properties.json"
+)
+
+if RUNTIME_ENV != "KDA":
+    # on non-KDA, multiple jar files can be passed after being delimited by a semicolon
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
     FLINK_SQL_CONNECTOR_KAFKA = f"flink-sql-connector-kafka-{FLINK_VERSION}.jar"
     table_env.get_config().set(
         "pipeline.jars", f"file://{os.path.join(CURRENT_DIR, 'lib', FLINK_SQL_CONNECTOR_KAFKA)}"
     )
+logging.info(f"app properties file path - {APPLICATION_PROPERTIES_FILE_PATH}")
 
 
 def get_application_properties():
@@ -28,7 +45,7 @@ def get_application_properties():
             properties = json.loads(contents)
             return properties
     else:
-        print(f"A file at '{APPLICATION_PROPERTIES_FILE_PATH}' was not found")
+        raise RuntimeError(f"A file at '{APPLICATION_PROPERTIES_FILE_PATH}' was not found")
 
 
 def property_map(props: dict, property_group_id: str):
@@ -97,14 +114,22 @@ def main():
     consumer_properties = property_map(props, consumer_property_group_key)
     consumer_table_name = consumer_properties["table.name"]
     consumer_topic_name = consumer_properties["topic.name"]
-    consumer_bootstrap_servers = consumer_properties["bootstrap.servers"]
+    consumer_bootstrap_servers = (
+        consumer_properties["bootstrap.servers"]
+        if RUNTIME_ENV != "LOCAL"
+        else consumer_properties["bootstrap.external.servers"]
+    )
     consumer_startup_mode = consumer_properties["startup.mode"]
     # producer
     producer_property_group_key = "producer.config.0"
     producer_properties = property_map(props, producer_property_group_key)
     producer_table_name = producer_properties["table.name"]
     producer_topic_name = producer_properties["topic.name"]
-    producer_bootstrap_servers = producer_properties["bootstrap.servers"]
+    producer_bootstrap_servers = (
+        producer_properties["bootstrap.servers"]
+        if RUNTIME_ENV != "LOCAL"
+        else producer_properties["bootstrap.external.servers"]
+    )
     # print
     print_table_name = "sink_print"
     ## create a souce table
@@ -122,7 +147,7 @@ def main():
     )
     table_env.execute_sql(create_print_table("sink_print"))
     ## insert into sink tables
-    if IS_LOCAL_FLINK:
+    if RUNTIME_ENV == "LOCAL":
         source_table = table_env.from_path(consumer_table_name)
         statement_set = table_env.create_statement_set()
         statement_set.add_insert(producer_table_name, source_table)
@@ -132,7 +157,7 @@ def main():
         table_result = table_env.execute_sql(
             f"INSERT INTO {producer_table_name} SELECT * FROM {consumer_table_name}"
         )
-        print(table_result.get_job_client().get_job_status())
+        logging.info(table_result.get_job_client().get_job_status())
 
 
 if __name__ == "__main__":
