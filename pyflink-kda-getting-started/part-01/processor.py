@@ -2,6 +2,7 @@ import os
 import json
 import logging
 
+import kafka  # check if --pyFiles works
 from pyflink.table import EnvironmentSettings, TableEnvironment
 
 logging.basicConfig(
