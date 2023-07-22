@@ -12,8 +12,7 @@
     "PropertyMap": {
       "table.name": "source_table",
       "topic.name": "stocks-in",
-      "bootstrap.servers": "kafka-0:9092",
-      "bootstrap.external.servers": "localhost:29092",
+      "bootstrap.servers": "localhost:29092",
       "startup.mode": "earliest-offset"
     }
   },
@@ -22,8 +21,7 @@
     "PropertyMap": {
       "table.name": "sink_table",
       "topic.name": "stocks-out",
-      "bootstrap.servers": "kafka-0:9092",
-      "bootstrap.external.servers": "localhost:29092"
+      "bootstrap.servers": "localhost:29092"
     }
   }
 ]

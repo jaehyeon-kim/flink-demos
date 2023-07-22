@@ -2,6 +2,7 @@ import os
 import json
 import logging
 
+import kafka  # check if --pyFiles works
 from pyflink.table import EnvironmentSettings, TableEnvironment
 
 logging.basicConfig(
@@ -11,6 +12,7 @@ logging.basicConfig(
 )
 
 RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "KDA")  # KDA, DOCKER, LOCAL
+BOOTSTRAP_SERVERS = os.environ.get("BOOTSTRAP_SERVERS")  # overwrite app config
 FLINK_VERSION = os.environ.get("FLINK_VERSION", "1.15.2")
 
 logging.info(f"runtime environment - {RUNTIME_ENV}...")
@@ -114,22 +116,14 @@ def main():
     consumer_properties = property_map(props, consumer_property_group_key)
     consumer_table_name = consumer_properties["table.name"]
     consumer_topic_name = consumer_properties["topic.name"]
-    consumer_bootstrap_servers = (
-        consumer_properties["bootstrap.servers"]
-        if RUNTIME_ENV != "LOCAL"
-        else consumer_properties["bootstrap.external.servers"]
-    )
+    consumer_bootstrap_servers = BOOTSTRAP_SERVERS or consumer_properties["bootstrap.servers"]
     consumer_startup_mode = consumer_properties["startup.mode"]
     # producer
     producer_property_group_key = "producer.config.0"
     producer_properties = property_map(props, producer_property_group_key)
     producer_table_name = producer_properties["table.name"]
     producer_topic_name = producer_properties["topic.name"]
-    producer_bootstrap_servers = (
-        producer_properties["bootstrap.servers"]
-        if RUNTIME_ENV != "LOCAL"
-        else producer_properties["bootstrap.external.servers"]
-    )
+    producer_bootstrap_servers = BOOTSTRAP_SERVERS or producer_properties["bootstrap.servers"]
     # print
     print_table_name = "sink_print"
     ## create a souce table
