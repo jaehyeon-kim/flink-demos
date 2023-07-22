@@ -20,6 +20,7 @@ services:
         rest.flamegraph.enabled: true
         web.backpressure.refresh-interval: 10000
       - RUNTIME_ENV=DOCKER
+      - BOOTSTRAP_SERVERS=kafka-0:9092
     volumes:
       - $PWD:/etc/flink
   taskmanager:
@@ -41,6 +42,7 @@ services:
         heartbeat.interval: 1000
         heartbeat.timeout: 5000
       - RUNTIME_ENV=DOCKER
+      - BOOTSTRAP_SERVERS=kafka-0:9092
     depends_on:
       - jobmanager
 
