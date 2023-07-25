@@ -6,7 +6,7 @@
 *-demo-data
 pyflink-udemy/flink-sql-connector-kafka-*.jar
 pyflink-udemy/revenue.csv
-external
+.external
 kda-package*
 site_packages
 
