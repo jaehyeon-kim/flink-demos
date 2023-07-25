@@ -22,10 +22,6 @@ table_env = TableEnvironment.create(env_settings)
 
 APPLICATION_PROPERTIES_FILE_PATH = (
     "/etc/flink/application_properties.json"  # on kda or docker-compose
-)
-
-APPLICATION_PROPERTIES_FILE_PATH = (
-    "/etc/flink/application_properties.json"
     if RUNTIME_ENV != "LOCAL"
     else "application_properties.json"
 )
@@ -90,7 +86,7 @@ def create_sink_table(table_name: str, topic_name: str, bootstrap_servers: str):
         'format' = 'json',
         'key.format' = 'json',
         'key.fields' = 'ticker',
-        'sink.partitioner' = 'fixed'
+        'properties.allow.auto.create.topics' = 'true'
     )
     """
 

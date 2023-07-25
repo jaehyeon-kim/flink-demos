@@ -23,4 +23,3 @@ if [ $PKG_ALL == "yes" ]; then
   echo "package pyflink app"
   zip -r kda-package.zip lib site_packages processor.py application_properties.json
 fi
-
