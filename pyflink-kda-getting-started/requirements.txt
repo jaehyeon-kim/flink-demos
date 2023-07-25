@@ -1,1 +1,2 @@
-kafka-python==2.0.2
+# kafka-python with IAM auth support - https://github.com/dpkp/kafka-python/pull/2255
+https://github.com/mattoberle/kafka-python/archive/7ff323727d99e0c33a68423300e7f88a9cf3f830.tar.gz

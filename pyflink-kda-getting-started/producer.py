@@ -5,6 +5,7 @@ import json
 import typing
 import random
 import logging
+import re
 import dataclasses
 
 from kafka import KafkaProducer
@@ -47,11 +48,18 @@ class Producer:
         self.producer = self.create()
 
     def create(self):
-        return KafkaProducer(
-            bootstrap_servers=self.bootstrap_servers,
-            value_serializer=lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
-            key_serializer=lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
-        )
+        params = {
+            "bootstrap_servers": self.bootstrap_servers,
+            "key_serializer": lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
+            "value_serializer": lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
+            "api_version": (2, 8, 1),
+        }
+        if re.search("9098$", self.bootstrap_servers[0]):
+            params = {
+                **params,
+                **{"security_protocol": "SASL_SSL", "sasl_mechanism": "AWS_MSK_IAM"},
+            }
+        return KafkaProducer(**params)
 
     def send(self, stocks: typing.List[Stock]):
         for stock in stocks:

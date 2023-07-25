@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import logging
 
 import kafka  # check if --pyFiles works
@@ -13,7 +14,6 @@ logging.basicConfig(
 
 RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "KDA")  # KDA, DOCKER, LOCAL
 BOOTSTRAP_SERVERS = os.environ.get("BOOTSTRAP_SERVERS")  # overwrite app config
-PIPELINE_JAR = os.environ.get("FLINK_VERSION", "1.15.2")
 
 logging.info(f"runtime environment - {RUNTIME_ENV}...")
 
@@ -52,43 +52,69 @@ def property_map(props: dict, property_group_id: str):
             return prop["PropertyMap"]
 
 
+def concat_connector_opts(opts: dict, bootstrap_servers: str):
+    if re.search("9098$", bootstrap_servers):
+        opts = {
+            **opts,
+            **{
+                "properties.security.protocol": "SASL_SSL",
+                "properties.sasl.mechanism": "AWS_MSK_IAM",
+                "properties.sasl.jaas.config": "software.amazon.msk.auth.iam.IAMLoginModule required;",
+                "properties.sasl.client.callback_handler_class": "software.amazon.msk.auth.iam.IAMClientCallbackHandler",
+            },
+        }
+    return ", ".join({f"'{k}' = '{v}'" for k, v in opts.items()})
+
+
 def create_source_table(
     table_name: str, topic_name: str, bootstrap_servers: str, startup_mode: str
 ):
-    return f"""
+    opts = {
+        "connector": "kafka",
+        "topic": topic_name,
+        "properties.bootstrap.servers": bootstrap_servers,
+        "properties.group.id": "soruce-group",
+        "format": "json",
+        "scan.startup.mode": startup_mode,
+    }
+    stmt = f"""
     CREATE TABLE {table_name} (
         event_time TIMESTAMP(3),
         ticker VARCHAR(6),
         price DOUBLE
     )
     WITH (
-        'connector' = 'kafka',
-        'topic' = '{topic_name}',
-        'properties.bootstrap.servers' = '{bootstrap_servers}',
-        'properties.group.id' = 'source-group',
-        'format' = 'json',
-        'scan.startup.mode' = '{startup_mode}'
+        {concat_connector_opts(opts, bootstrap_servers)}
     )
     """
+    logging.info("source table statement...")
+    logging.info(stmt)
+    return stmt
 
 
 def create_sink_table(table_name: str, topic_name: str, bootstrap_servers: str):
-    return f"""
+    opts = {
+        "connector": "kafka",
+        "topic": topic_name,
+        "properties.bootstrap.servers": bootstrap_servers,
+        "format": "json",
+        "key.format": "json",
+        "key.fields": "ticker",
+        "properties.allow.auto.create.topics": "true",
+    }
+    stmt = f"""
     CREATE TABLE {table_name} (
         event_time TIMESTAMP(3),
         ticker VARCHAR(6),
         price DOUBLE
     )
     WITH (
-        'connector' = 'kafka',
-        'topic' = '{topic_name}',
-        'properties.bootstrap.servers' = '{bootstrap_servers}',        
-        'format' = 'json',
-        'key.format' = 'json',
-        'key.fields' = 'ticker',
-        'properties.allow.auto.create.topics' = 'true'
+        {concat_connector_opts(opts, bootstrap_servers)}
     )
     """
+    logging.info("sint table statement...")
+    logging.info(stmt)
+    return stmt
 
 
 def create_print_table(table_name: str):
