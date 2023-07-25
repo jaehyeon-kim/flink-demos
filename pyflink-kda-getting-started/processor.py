@@ -13,7 +13,7 @@ logging.basicConfig(
 
 RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "KDA")  # KDA, DOCKER, LOCAL
 BOOTSTRAP_SERVERS = os.environ.get("BOOTSTRAP_SERVERS")  # overwrite app config
-FLINK_VERSION = os.environ.get("FLINK_VERSION", "1.15.2")
+PIPELINE_JAR = os.environ.get("FLINK_VERSION", "1.15.2")
 
 logging.info(f"runtime environment - {RUNTIME_ENV}...")
 
@@ -29,9 +29,9 @@ APPLICATION_PROPERTIES_FILE_PATH = (
 if RUNTIME_ENV != "KDA":
     # on non-KDA, multiple jar files can be passed after being delimited by a semicolon
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-    FLINK_SQL_CONNECTOR_KAFKA = f"flink-sql-connector-kafka-{FLINK_VERSION}.jar"
+    PIPELINE_JAR = "pyflink-getting-started-1.0.0.jar"
     table_env.get_config().set(
-        "pipeline.jars", f"file://{os.path.join(CURRENT_DIR, 'lib', FLINK_SQL_CONNECTOR_KAFKA)}"
+        "pipeline.jars", f"file://{os.path.join(CURRENT_DIR, 'package', 'lib', PIPELINE_JAR)}"
     )
 logging.info(f"app properties file path - {APPLICATION_PROPERTIES_FILE_PATH}")
 

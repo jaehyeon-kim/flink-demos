@@ -39,8 +39,13 @@ services:
     container_name: kpow
     ports:
       - "3000:3000"
+    networks:
+      - kafkanet
     environment:
       BOOTSTRAP: kafka-0:9092
+    depends_on:
+      - zookeeper
+      - kafka-0
 
 networks:
   kafkanet:
