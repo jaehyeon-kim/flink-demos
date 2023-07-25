@@ -20,6 +20,9 @@ resource "aws_msk_cluster" "msk_data_cluster" {
 
   client_authentication {
     unauthenticated = true
+    sasl {
+      iam = true
+    }
   }
 
   encryption_info {

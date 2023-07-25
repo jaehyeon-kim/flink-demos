@@ -64,7 +64,16 @@ output "msk_arn" {
 }
 
 output "msk_bootstrap_brokers" {
-  description = "One or more DNS names (or IP addresses) and port pairs"
+  description = "One or more DNS names (or IP addresses) and PLAINTEXT port pairs"
   value       = aws_msk_cluster.msk_data_cluster.bootstrap_brokers
 }
 
+output "msk_bootstrap_brokers_sasl_iam" {
+  description = "One or more DNS names (or IP addresses) and SASL IAM port pairs"
+  value       = aws_msk_cluster.msk_data_cluster.bootstrap_brokers_sasl_iam
+}
+
+output "msk_bootstrap_brokers_tls" {
+  description = "One or more DNS names (or IP addresses) and TLS port pairs"
+  value       = aws_msk_cluster.msk_data_cluster.bootstrap_brokers_tls
+}
