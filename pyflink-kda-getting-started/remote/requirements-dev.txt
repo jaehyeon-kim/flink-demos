@@ -1,0 +1,5 @@
+-r requirements.txt
+apache-flink==1.15.2
+black==19.10b0
+pytest
+pytest-cov

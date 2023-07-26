@@ -1,0 +1,27 @@
+[
+  {
+    "PropertyGroupId": "kinesis.analytics.flink.run.options",
+    "PropertyMap": {
+      "python": "processor.py",
+      "jarfile": "package/lib/pyflink-getting-started-1.0.0.jar",
+      "pyFiles": "package/site_packages/"
+    }
+  },
+  {
+    "PropertyGroupId": "consumer.config.0",
+    "PropertyMap": {
+      "table.name": "source_table",
+      "topic.name": "stocks-in",
+      "bootstrap.servers": "localhost:29092",
+      "startup.mode": "earliest-offset"
+    }
+  },
+  {
+    "PropertyGroupId": "producer.config.0",
+    "PropertyMap": {
+      "table.name": "sink_table",
+      "topic.name": "stocks-out",
+      "bootstrap.servers": "localhost:29092"
+    }
+  }
+]
