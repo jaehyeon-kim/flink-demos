@@ -3,8 +3,8 @@
     "PropertyGroupId": "kinesis.analytics.flink.run.options",
     "PropertyMap": {
       "python": "processor.py",
-      "jarfile": "lib/flink-sql-connector-kinesis-1.15.2.jar",
-      "pyFiles": "site_packages/"
+      "jarfile": "package/lib/pyflink-getting-started-1.0.0.jar",
+      "pyFiles": "package/site_packages/"
     }
   },
   {

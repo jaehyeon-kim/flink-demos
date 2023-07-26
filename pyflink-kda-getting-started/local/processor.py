@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import logging
 
 import kafka  # check if --pyFiles works
@@ -7,13 +8,12 @@ from pyflink.table import EnvironmentSettings, TableEnvironment
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
+    format="%(asctime)s.%(msecs)03d:%(levelname)s:%(name)s:%(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "KDA")  # KDA, DOCKER, LOCAL
 BOOTSTRAP_SERVERS = os.environ.get("BOOTSTRAP_SERVERS")  # overwrite app config
-FLINK_VERSION = os.environ.get("FLINK_VERSION", "1.15.2")
 
 logging.info(f"runtime environment - {RUNTIME_ENV}...")
 
@@ -22,10 +22,6 @@ table_env = TableEnvironment.create(env_settings)
 
 APPLICATION_PROPERTIES_FILE_PATH = (
     "/etc/flink/application_properties.json"  # on kda or docker-compose
-)
-
-APPLICATION_PROPERTIES_FILE_PATH = (
-    "/etc/flink/application_properties.json"
     if RUNTIME_ENV != "LOCAL"
     else "application_properties.json"
 )
@@ -33,9 +29,9 @@ APPLICATION_PROPERTIES_FILE_PATH = (
 if RUNTIME_ENV != "KDA":
     # on non-KDA, multiple jar files can be passed after being delimited by a semicolon
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-    FLINK_SQL_CONNECTOR_KAFKA = f"flink-sql-connector-kafka-{FLINK_VERSION}.jar"
+    PIPELINE_JAR = "flink-sql-connector-kafka-1.15.2.jar"
     table_env.get_config().set(
-        "pipeline.jars", f"file://{os.path.join(CURRENT_DIR, 'lib', FLINK_SQL_CONNECTOR_KAFKA)}"
+        "pipeline.jars", f"file://{os.path.join(CURRENT_DIR, 'package', 'lib', PIPELINE_JAR)}"
     )
 logging.info(f"app properties file path - {APPLICATION_PROPERTIES_FILE_PATH}")
 
@@ -59,7 +55,7 @@ def property_map(props: dict, property_group_id: str):
 def create_source_table(
     table_name: str, topic_name: str, bootstrap_servers: str, startup_mode: str
 ):
-    return f"""
+    stmt = f"""
     CREATE TABLE {table_name} (
         event_time TIMESTAMP(3),
         ticker VARCHAR(6),
@@ -74,10 +70,13 @@ def create_source_table(
         'scan.startup.mode' = '{startup_mode}'
     )
     """
+    logging.info("source table statement...")
+    logging.info(stmt)
+    return stmt
 
 
 def create_sink_table(table_name: str, topic_name: str, bootstrap_servers: str):
-    return f"""
+    stmt = f"""
     CREATE TABLE {table_name} (
         event_time TIMESTAMP(3),
         ticker VARCHAR(6),
@@ -90,9 +89,12 @@ def create_sink_table(table_name: str, topic_name: str, bootstrap_servers: str):
         'format' = 'json',
         'key.format' = 'json',
         'key.fields' = 'ticker',
-        'sink.partitioner' = 'fixed'
+        'properties.allow.auto.create.topics' = 'true'
     )
     """
+    logging.info("sint table statement...")
+    logging.info(stmt)
+    return stmt
 
 
 def create_print_table(table_name: str):

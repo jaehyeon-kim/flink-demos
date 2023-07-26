@@ -5,13 +5,14 @@ import json
 import typing
 import random
 import logging
+import re
 import dataclasses
 
 from kafka import KafkaProducer
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
+    format="%(asctime)s.%(msecs)03d:%(levelname)s:%(name)s:%(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
@@ -49,8 +50,8 @@ class Producer:
     def create(self):
         return KafkaProducer(
             bootstrap_servers=self.bootstrap_servers,
-            value_serializer=lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
             key_serializer=lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
+            value_serializer=lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
         )
 
     def send(self, stocks: typing.List[Stock]):
