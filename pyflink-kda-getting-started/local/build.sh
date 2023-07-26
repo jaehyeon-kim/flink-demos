@@ -12,7 +12,6 @@ FILE_NAME=flink-sql-connector-kafka-$VERSION
 DOWNLOAD_URL=https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/$VERSION/flink-sql-connector-kafka-$VERSION.jar
 curl -L -o $SRC_PATH/lib/$FILE_NAME.jar ${DOWNLOAD_URL}
 
-
 ## Install pip packages
 echo "install and zip pip packages..."
 pip install -r requirements.txt --target $SRC_PATH/site_packages

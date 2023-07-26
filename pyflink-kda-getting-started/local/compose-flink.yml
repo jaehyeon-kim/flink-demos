@@ -22,7 +22,7 @@ services:
       - RUNTIME_ENV=DOCKER
       - BOOTSTRAP_SERVERS=kafka-0:9092
     volumes:
-      - ../..:/etc/flink
+      - $PWD:/etc/flink
   taskmanager:
     image: pyflink:1.15.2-scala_2.12
     container_name: taskmanager
@@ -31,7 +31,7 @@ services:
       - kafkanet
     volumes:
       - flink_data:/tmp/
-      - ../..:/etc/flink
+      - $PWD:/etc/flink
     environment:
       - |
         FLINK_PROPERTIES=

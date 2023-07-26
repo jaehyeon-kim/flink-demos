@@ -8,7 +8,7 @@ from pyflink.table import EnvironmentSettings, TableEnvironment
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
+    format="%(asctime)s.%(msecs)03d:%(levelname)s:%(name)s:%(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
@@ -29,7 +29,7 @@ APPLICATION_PROPERTIES_FILE_PATH = (
 if RUNTIME_ENV != "KDA":
     # on non-KDA, multiple jar files can be passed after being delimited by a semicolon
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-    PIPELINE_JAR = "pyflink-getting-started-1.0.0.jar"
+    PIPELINE_JAR = "flink-sql-connector-kafka-1.15.2.jar"
     table_env.get_config().set(
         "pipeline.jars", f"file://{os.path.join(CURRENT_DIR, 'package', 'lib', PIPELINE_JAR)}"
     )
