@@ -30,6 +30,7 @@ if RUNTIME_ENV != "KDA":
     # on non-KDA, multiple jar files can be passed after being delimited by a semicolon
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
     PIPELINE_JAR = "pyflink-getting-started-1.0.0.jar"
+    # PIPELINE_JAR = "uber-jar-for-pyflink-1.0.1.jar"
     table_env.get_config().set(
         "pipeline.jars", f"file://{os.path.join(CURRENT_DIR, 'package', 'lib', PIPELINE_JAR)}"
     )
@@ -52,7 +53,7 @@ def property_map(props: dict, property_group_id: str):
             return prop["PropertyMap"]
 
 
-def concat_connector_opts(opts: dict, bootstrap_servers: str):
+def inject_security_opts(opts: dict, bootstrap_servers: str):
     if re.search("9098$", bootstrap_servers):
         opts = {
             **opts,
@@ -60,7 +61,7 @@ def concat_connector_opts(opts: dict, bootstrap_servers: str):
                 "properties.security.protocol": "SASL_SSL",
                 "properties.sasl.mechanism": "AWS_MSK_IAM",
                 "properties.sasl.jaas.config": "software.amazon.msk.auth.iam.IAMLoginModule required;",
-                "properties.sasl.client.callback_handler_class": "software.amazon.msk.auth.iam.IAMClientCallbackHandler",
+                "properties.sasl.client.callback.handler.class": "software.amazon.msk.auth.iam.IAMClientCallbackHandler",
             },
         }
     return ", ".join({f"'{k}' = '{v}'" for k, v in opts.items()})
@@ -84,7 +85,7 @@ def create_source_table(
         price DOUBLE
     )
     WITH (
-        {concat_connector_opts(opts, bootstrap_servers)}
+        {inject_security_opts(opts, bootstrap_servers)}
     )
     """
     logging.info("source table statement...")
@@ -109,7 +110,7 @@ def create_sink_table(table_name: str, topic_name: str, bootstrap_servers: str):
         price DOUBLE
     )
     WITH (
-        {concat_connector_opts(opts, bootstrap_servers)}
+        {inject_security_opts(opts, bootstrap_servers)}
     )
     """
     logging.info("sint table statement...")
