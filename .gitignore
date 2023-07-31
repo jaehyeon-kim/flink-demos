@@ -9,6 +9,7 @@ pyflink-udemy/revenue.csv
 .external
 kda-package*
 site_packages
+connectors
 
 ## sam
 .aws-sam*

@@ -1,0 +1,36 @@
+[
+  {
+    "PropertyGroupId": "kinesis.analytics.flink.run.options",
+    "PropertyMap": {
+      "python": "processor.py",
+      "jarfile": "package/lib/flink-sql-connector-kinesis-1.15.2.jar",
+      "pyFiles": "package/site_packages/"
+    }
+  },
+  {
+    "PropertyGroupId": "consumer.config.0",
+    "PropertyMap": {
+      "table.name": "flagged_accounts",
+      "topic.name": "flagged-accounts",
+      "bootstrap.servers": "localhost:29092",
+      "startup.mode": "earliest-offset"
+    }
+  },
+  {
+    "PropertyGroupId": "consumer.config.1",
+    "PropertyMap": {
+      "table.name": "transactions",
+      "topic.name": "transactions",
+      "bootstrap.servers": "localhost:29092",
+      "startup.mode": "earliest-offset"
+    }
+  },
+  {
+    "PropertyGroupId": "producer.config.0",
+    "PropertyMap": {
+      "table.name": "flagged_transactions",
+      "topic.name": "flagged-transactions",
+      "bootstrap.servers": "localhost:29092"
+    }
+  }
+]
