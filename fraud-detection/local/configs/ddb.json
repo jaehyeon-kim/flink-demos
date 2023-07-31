@@ -1,0 +1,30 @@
+{
+  "TableName": "flagged-transactions",
+  "KeySchema": [
+    { "AttributeName": "transaction_id", "KeyType": "HASH" },
+    { "AttributeName": "transaction_date", "KeyType": "RANGE" }
+  ],
+  "AttributeDefinitions": [
+    { "AttributeName": "transaction_id", "AttributeType": "S" },
+    { "AttributeName": "account_id", "AttributeType": "N" },
+    { "AttributeName": "transaction_date", "AttributeType": "S" }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 2,
+    "WriteCapacityUnits": 2
+  },
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "account",
+      "KeySchema": [
+        { "AttributeName": "account_id", "KeyType": "HASH" },
+        { "AttributeName": "transaction_date", "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "ALL" },
+      "ProvisionedThroughput": {
+        "ReadCapacityUnits": 2,
+        "WriteCapacityUnits": 2
+      }
+    }
+  ]
+}
