@@ -63,6 +63,7 @@ services:
       - kafkanet
     environment:
       BOOTSTRAP: kafka-0:9092
+      CONNECT_REST_URL: http://kafka-connect:8083
     depends_on:
       - zookeeper
       - kafka-0
