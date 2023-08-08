@@ -7,7 +7,7 @@
   "editor.tabSize": 2,
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": false,
-  "python.linting.enabled": true,
+  "python.linting.enabled": false,
   "python.formatting.provider": "none",
   "python.formatting.blackPath": "black",
   "python.formatting.blackArgs": ["--line-length", "100"],
