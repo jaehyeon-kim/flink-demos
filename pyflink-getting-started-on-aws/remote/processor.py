@@ -113,7 +113,7 @@ def create_sink_table(table_name: str, topic_name: str, bootstrap_servers: str):
         {inject_security_opts(opts, bootstrap_servers)}
     )
     """
-    logging.info("sint table statement...")
+    logging.info("sink table statement...")
     logging.info(stmt)
     return stmt
 

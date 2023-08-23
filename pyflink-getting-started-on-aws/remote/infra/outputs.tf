@@ -77,3 +77,9 @@ output "msk_bootstrap_brokers_tls" {
   description = "One or more DNS names (or IP addresses) and TLS port pairs"
   value       = aws_msk_cluster.msk_data_cluster.bootstrap_brokers_tls
 }
+
+# KDA
+output "kda_app_arn" {
+  description = "Kinesis Application ARN"
+  value       = local.kda.to_create ? aws_kinesisanalyticsv2_application.kda_app[0].arn : "NA"
+}
