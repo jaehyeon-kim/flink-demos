@@ -52,7 +52,7 @@ locals {
   }
 
   kda = {
-    to_create    = true
+    to_create    = false
     runtime_env  = "FLINK-1_15"
     package_name = "kda-package.zip"
   }
