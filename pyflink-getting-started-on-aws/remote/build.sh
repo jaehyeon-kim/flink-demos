@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-PKG_ALL="${PKG_ALL:-no}"
-
 SCRIPT_DIR="$(cd $(dirname "$0"); pwd)"
 SRC_PATH=$SCRIPT_DIR/package
 
-# remove contents under $SRC_PATH except for uber-jar-for-pyflink and kda-package.zip
+# remove contents under $SRC_PATH (except for uber-jar-for-pyflink) and kda-package.zip file
 shopt -s extglob
 rm -rf $SRC_PATH/!(uber-jar-for-pyflink) kda-package.zip
 

@@ -46,6 +46,59 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-0:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      - zookeeper
+      - kafka-0
+  jobmanager:
+    image: confluent-flink-101:1.15.4
+    command: jobmanager
+    container_name: jobmanager
+    ports:
+      - "8081:8081"
+    networks:
+      - kafkanet
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+        rest.flamegraph.enabled: true
+        web.backpressure.refresh-interval: 10000
+  taskmanager:
+    image: confluent-flink-101:1.15.4
+    command: taskmanager
+    container_name: taskmanager
+    networks:
+      - kafkanet
+    volumes:
+      - flink_data:/tmp/
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 3
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+    depends_on:
+      - jobmanager
+  sql-client:
+    image: confluent-flink-101:1.15.4
+    command: bin/sql-client.sh
+    container_name: sql-client
+    networks:
+      - kafkanet
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        rest.address: jobmanager
+    depends_on:
+      - jobmanager
 
 networks:
   kafkanet:
@@ -58,3 +111,4 @@ volumes:
   kafka_0_data:
     driver: local
     name: kafka_0_data
+  flink_data:

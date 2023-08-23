@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-PKG_ALL="${PKG_ALL:-no}"
-
 SCRIPT_DIR="$(cd $(dirname "$0"); pwd)"
 SRC_PATH=$SCRIPT_DIR/package
 rm -rf $SRC_PATH && mkdir -p $SRC_PATH/lib

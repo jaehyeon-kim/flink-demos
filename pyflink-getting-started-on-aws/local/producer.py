@@ -5,7 +5,6 @@ import json
 import typing
 import random
 import logging
-import re
 import dataclasses
 
 from kafka import KafkaProducer
