@@ -51,6 +51,12 @@ locals {
     default_replication_factor = 2
   }
 
+  kda = {
+    to_create    = false
+    runtime_env  = "FLINK-1_15"
+    package_name = "kda-package.zip"
+  }
+
   tags = {
     Name        = local.name
     Environment = local.environment
