@@ -16,8 +16,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-
 
 @dataclasses.dataclass
 class Stock:
