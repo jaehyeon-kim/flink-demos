@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  kpow:
+    image: factorhouse/kpow-ce:91.2.1
+    container_name: kpow
+    ports:
+      - "3000:3000"
+    networks:
+      - appnet
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
+      # MSK cluster
+      BOOTSTRAP: $BOOTSTRAP_SERVERS
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_MECHANISM: AWS_MSK_IAM
+      SASL_CLIENT_CALLBACK_HANDLER_CLASS: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+      SASL_JAAS_CONFIG: software.amazon.msk.auth.iam.IAMLoginModule required;
+      # MSK connect
+      CONNECT_AWS_REGION: $AWS_DEFAULT_REGION
+
+networks:
+  appnet:
+    name: app-network
