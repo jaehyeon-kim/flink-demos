@@ -71,10 +71,6 @@ resource "aws_mskconnect_connector" "camel_ddb_sink" {
   }
 
   service_execution_role_arn = aws_iam_role.kafka_connector_role.arn
-
-  depends_on = [
-    aws_mskconnect_connector.msk_data_generator
-  ]
 }
 
 resource "aws_mskconnect_custom_plugin" "camel_ddb_sink" {
@@ -92,9 +88,9 @@ resource "aws_mskconnect_custom_plugin" "camel_ddb_sink" {
 resource "aws_s3_object" "camel_ddb_sink" {
   bucket = aws_s3_bucket.default_bucket.id
   key    = "plugins/${local.msk_connect.package_name}"
-  source = "connectors/${local.msk_connect.package_name}"
+  source = "${dirname(path.cwd)}/connectors/${local.msk_connect.package_name}"
 
-  etag = filemd5("connectors/${local.msk_connect.package_name}")
+  etag = filemd5("${dirname(path.cwd)}/connectors/${local.msk_connect.package_name}")
 }
 
 resource "aws_cloudwatch_log_group" "camel_ddb_sink" {

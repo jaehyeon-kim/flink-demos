@@ -89,7 +89,6 @@ resource "aws_security_group_rule" "msk_self_outbound_all" {
 }
 
 resource "aws_security_group_rule" "msk_kda_inbound" {
-  count                    = local.kda.to_create ? 1 : 0
   type                     = "ingress"
   description              = "Allow KDA access"
   security_group_id        = aws_security_group.msk.id

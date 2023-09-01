@@ -68,8 +68,19 @@ output "msk_bootstrap_brokers_sasl_iam" {
   value       = aws_msk_cluster.msk_data_cluster.bootstrap_brokers_sasl_iam
 }
 
+# MSK Connect
+output "ddb_sink_arn" {
+  description = "Amazon Resource Name (ARN) of the Camel DyanmoDB Sink connector"
+  value       = aws_mskconnect_connector.camel_ddb_sink.arn
+}
+
+output "ddb_sink_version" {
+  description = "Current version of the Camel DyanmoDB Sink connector"
+  value       = aws_mskconnect_connector.camel_ddb_sink.version
+}
+
 # KDA
 output "kda_app_arn" {
   description = "Kinesis Application ARN"
-  value       = local.kda.to_create ? aws_kinesisanalyticsv2_application.kda_app[0].arn : "NA"
+  value       = aws_kinesisanalyticsv2_application.kda_app.arn
 }
