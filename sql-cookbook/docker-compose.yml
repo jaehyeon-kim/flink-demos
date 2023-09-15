@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   jobmanager:
-    image: flink-sql-cookbook:1.17.1-scala_2.12
+    image: flink-sql-cookbook:1.17.1
     command: jobmanager
     container_name: jobmanager
     ports:
@@ -19,14 +19,17 @@ services:
         heartbeat.timeout: 5000
         rest.flamegraph.enabled: true
         web.backpressure.refresh-interval: 10000
+    volumes:
+      - ./src:/tmp/src
   taskmanager:
-    image: flink-sql-cookbook:1.17.1-scala_2.12
+    image: flink-sql-cookbook:1.17.1
     command: taskmanager
     container_name: taskmanager
     networks:
       - appnet
     volumes:
       - flink_data:/tmp/
+      - ./src:/tmp/src
     environment:
       - |
         FLINK_PROPERTIES=
@@ -39,8 +42,8 @@ services:
     depends_on:
       - jobmanager
   sql-client:
-    image: flink-sql-cookbook:1.17.1-scala_2.12
-    command: bin/sql-client.sh
+    image: flink-sql-cookbook:1.17.1
+    command: bin/sql-client.sh --pyFiles file:///tmp/src/python_udf.py
     container_name: sql-client
     networks:
       - appnet
@@ -51,6 +54,8 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         rest.address: jobmanager
+    volumes:
+      - ./src:/tmp/src
   zookeeper:
     image: bitnami/zookeeper:3.5
     container_name: zookeeper
