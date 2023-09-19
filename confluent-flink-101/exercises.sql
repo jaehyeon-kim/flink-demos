@@ -123,7 +123,7 @@ WITH (
 );
 
 -- native approach to windowing with Flink SQL
---  - ounding the timestamp in each page view down to the nearest second, state has to be kept indefinitely
+--  - rounding the timestamp in each page view down to the nearest second, state has to be kept indefinitely
 SELECT 
   FLOOR(ts to SECOND) AS window_start,
   count(url) AS cnt
@@ -154,7 +154,7 @@ CREATE TABLE `pageviews` (
 )
 WITH (
   'connector' = 'faker',
-  'rows-per-second' = '100',
+  'rows-per-second' = '1',
   'fields.url.expression' = '/#{superhero.name}.html',
   'fields.user_id.expression' = '#{numerify ''user_##''}',
   'fields.browser.expression' = '#{Options.option ''chrome'', ''firefox'', ''safari'')}',
@@ -164,14 +164,14 @@ WITH (
 DESCRIBE pageviews;
 
 SELECT
-  window_start, count(url) AS cnt
-FROM TABLE(TUMBLE(TABLE pageviews, DESCRIPTOR(proc_time), INTERVAL '1' SECOND))
-GROUP BY window_start;
+  window_start, window_end, window_time, count(url) AS cnt
+FROM TABLE(TUMBLE(TABLE pageviews, DESCRIPTOR(proc_time), INTERVAL '3' SECOND))
+GROUP BY window_start, window_end, window_time;
 
 SELECT *
-FROM TABLE(TUMBLE(TABLE pageviews, DESCRIPTOR(proc_time), INTERVAL '1' SECOND));
+FROM TABLE(TUMBLE(TABLE pageviews, DESCRIPTOR(proc_time), INTERVAL '3' SECOND));
 
--- Supported windows (https://nightlies.apache.org/flink/flink-docs-stable/docs/dev/table/sql/queries/window-tvf/)
+-- Supported windows (https://nightlqies.apache.org/flink/flink-docs-stable/docs/dev/table/sql/queries/window-tvf/)
 --    Tumble Windows
 --    Hop Windows
 --    Cumulate Windows
@@ -187,26 +187,28 @@ CREATE TABLE `pageviews` (
   `user_id` STRING,
   `browser` STRING,
   `ts` TIMESTAMP(3),
-  WATERMARK FOR `ts` AS ts - INTERVAL '5' SECOND
+  WATERMARK FOR `ts` AS ts - INTERVAL '1' SECOND
 )
 WITH (
   'connector' = 'faker',
-  'rows-per-second' = '100',
+  'rows-per-second' = '1',
   'fields.url.expression' = '/#{superhero.name}.html',
   'fields.user_id.expression' = '#{numerify ''user_##''}',
   'fields.browser.expression' = '#{Options.option ''chrome'', ''firefox'', ''safari'')}',
-  'fields.ts.expression' =  '#{date.past ''5'',''1'',''SECONDS''}'
+  'fields.ts.expression' =  '#{date.past ''15'',''1'',''SECONDS''}'
 );
+
+set 'sql-client.execution.result-mode' = 'changelog';
 
 -- tumbling window by event time with watermarks
 SELECT
-  window_start, count(url) AS cnt
+  window_start, window_end, count(url) AS cnt
 FROM TABLE(
-  TUMBLE(TABLE pageviews, DESCRIPTOR(ts), INTERVAL '1' SECOND))
-GROUP BY window_start;
+  TUMBLE(TABLE pageviews, DESCRIPTOR(ts), INTERVAL '5' SECOND))
+GROUP BY window_start, window_end;
 
-SELECT *
-FROM TABLE(TUMBLE(TABLE pageviews, DESCRIPTOR(ts), INTERVAL '1' SECOND));
+SELECT ts, window_start, window_end
+FROM TABLE(TUMBLE(TABLE pageviews, DESCRIPTOR(ts), INTERVAL '5' SECOND));
 
 -- pattern match
 -- finds cases where users had two pageview events using two different browsers within one second

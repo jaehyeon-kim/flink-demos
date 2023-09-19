@@ -10,6 +10,7 @@ pyflink-udemy/revenue.csv
 kda-package*
 site_packages
 connectors
+airports.csv
 
 ## sam
 .aws-sam*
