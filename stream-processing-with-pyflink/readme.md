@@ -455,14 +455,14 @@ set 'table.exec.source.idle-timeout' = '2000';
 -- JDBC supports an optional lookup cache (disabled by default)
 --    and you can configure it using lookup.cache.max-rows and lookup.cache.ttl
 CREATE TABLE accounts (
-  accountid STRING,
-  districtid STRING,
+  accountId STRING,
+  districtId STRING,
   frequency STRING,
-  createdate DATE,
-  updatetime BIGINT,
-  eventTime_ltz AS TO_TIMESTAMP_LTZ(updatetime, 3),
+  createDate STRING,
+  updateTime BIGINT,
+  eventTime_ltz AS TO_TIMESTAMP_LTZ(updateTime, 3),
   WATERMARK FOR eventTime_ltz AS eventTime_ltz,
-  PRIMARY KEY (accountid) NOT ENFORCED
+  PRIMARY KEY (accountId) NOT ENFORCED
 ) WITH (
   'connector' = 'jdbc',
   'url' = 'jdbc:postgresql://postgres:5432/main',
@@ -470,4 +470,18 @@ CREATE TABLE accounts (
   'username' = 'postgres',
   'password' = 'postgres'
 );
+
+SELECT
+  t.transactionId,
+  t.accountId,
+  t.eventTime_ltz,
+  TO_TIMESTAMP_LTZ(a.updateTime, 3) AS updateTime,
+  t.type,
+  t.amount,
+  t.balance,
+  a.districtId,
+  a.frequency
+FROM transactions AS t
+JOIN accounts FOR SYSTEM_TIME AS OF t.eventTime_ltz AS a
+ON t.accountId = a.accountId;
 ```
