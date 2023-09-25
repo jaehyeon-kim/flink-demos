@@ -1,10 +1,12 @@
 import os
 import csv
+import io
 import datetime
 import dataclasses
 import json
 import typing
 import logging
+import pandas as pd
 
 from kafka import KafkaAdminClient, KafkaProducer
 from kafka.admin import NewTopic
@@ -15,8 +17,6 @@ logging.basicConfig(
     format="%(asctime)s.%(msecs)03d:%(levelname)s:%(name)s:%(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
-
-DATA_PATH = os.getenv("DATA_PATH", ".external/data")
 
 
 @dataclasses.dataclass
@@ -30,35 +30,52 @@ class Transaction:
     operation: str
     amount: float
     balance: float
+    dataTime: int
+    dataTimeFormatted: str
 
     def asdict(self):
         return dataclasses.asdict(self)
 
+    @classmethod
+    def init(cls, row: typing.Dict[str, str]):
+        date_part, time_part = tuple(row["fulldatewithtime"].split("T"))
+        data_date = (pd.to_datetime(date_part) + pd.to_timedelta(time_part)).to_pydatetime()
+        return cls(
+            row["trans_id"],
+            row["account_id"],
+            row["customer_id"],
+            int(
+                (datetime.datetime.now() - datetime.datetime.fromtimestamp(0)).total_seconds()
+                * 1000
+            ),
+            datetime.datetime.now().isoformat(sep=" ", timespec="milliseconds"),
+            row["type"],
+            row["operation"],
+            float(row["amount"]),
+            float(row["balance"]),
+            int((data_date - datetime.datetime.fromtimestamp(0)).total_seconds() * 1000),
+            data_date.isoformat(sep=" ", timespec="milliseconds"),
+        )
+
     @staticmethod
-    def read(file_path: str = os.path.join(DATA_PATH, "transactions.csv")):
+    def read_line(item_str: str):
+        items = []
+        logging.info(f"reading transaction records from item string...")
+        csv_file = io.StringIO(item_str)
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            items.append(Transaction.init(row))
+        logging.info(f"{len(items)} records are read")
+        return items
+
+    @staticmethod
+    def read(file_path: str):
         items = []
         logging.info(f"reading transaction records from {file_path}...")
         with open(file_path) as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
-                items.append(
-                    Transaction(
-                        row["trans_id"],
-                        row["account_id"],
-                        row["customer_id"],
-                        int(
-                            (
-                                datetime.datetime.now() - datetime.datetime.fromtimestamp(0)
-                            ).total_seconds()
-                            * 1000
-                        ),
-                        datetime.datetime.now().isoformat(sep=" ", timespec="milliseconds"),
-                        row["type"],
-                        row["operation"],
-                        float(row["amount"]),
-                        float(row["balance"]),
-                    )
-                )
+                items.append(Transaction.init(row))
         logging.info(f"{len(items)} records are read")
         return items
 
@@ -74,27 +91,27 @@ class Account:
     def asdict(self):
         return dataclasses.asdict(self)
 
+    @classmethod
+    def init(cls, row: typing.Dict[str, str]):
+        return cls(
+            row["account_id"],
+            row["district_id"],
+            row["frequency"],
+            row["parseddate"],
+            int(
+                (datetime.datetime.now() - datetime.datetime.fromtimestamp(0)).total_seconds()
+                * 1000
+            ),
+        )
+
     @staticmethod
-    def read(file_path: str = os.path.join(DATA_PATH, "accounts.csv")):
+    def read(file_path: str):
         items = []
         logging.info(f"reading account records from {file_path}...")
         with open(file_path) as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
-                items.append(
-                    Account(
-                        row["account_id"],
-                        row["district_id"],
-                        row["frequency"],
-                        row["parseddate"],
-                        int(
-                            (
-                                datetime.datetime.now() - datetime.datetime.fromtimestamp(0)
-                            ).total_seconds()
-                            * 1000
-                        ),
-                    )
-                )
+                items.append(Account.init(row))
         logging.info(f"{len(items)} records are read")
         return items
 
@@ -119,36 +136,36 @@ class Customer:
     def asdict(self):
         return dataclasses.asdict(self)
 
+    @classmethod
+    def init(cls, row: typing.Dict[str, str]):
+        return cls(
+            row["customer_id"],
+            row["sex"],
+            row["social"],
+            f'{row["first"]} {row["middle"]} {row["last"]}',
+            row["phone"],
+            row["email"],
+            row["address_1"],
+            row["address_2"],
+            row["city"],
+            row["state"],
+            row["zipcode"],
+            row["district_id"],
+            row["date"],
+            int(
+                (datetime.datetime.now() - datetime.datetime.fromtimestamp(0)).total_seconds()
+                * 1000
+            ),
+        )
+
     @staticmethod
-    def read(file_path: str = os.path.join(DATA_PATH, "customers.csv")):
+    def read(file_path: str):
         items = []
         logging.info(f"reading customer records from {file_path}...")
         with open(file_path) as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
-                items.append(
-                    Customer(
-                        row["customer_id"],
-                        row["sex"],
-                        row["social"],
-                        f'{row["first"]} {row["middle"]} {row["last"]}',
-                        row["phone"],
-                        row["email"],
-                        row["address_1"],
-                        row["address_2"],
-                        row["city"],
-                        row["state"],
-                        row["zipcode"],
-                        row["district_id"],
-                        row["date"],
-                        int(
-                            (
-                                datetime.datetime.now() - datetime.datetime.fromtimestamp(0)
-                            ).total_seconds()
-                            * 1000
-                        ),
-                    )
-                )
+                items.append(Customer.init(row))
         logging.info(f"{len(items)} records are read")
         return items
 
@@ -158,6 +175,12 @@ class KafkaClient:
         self.bootstrap_servers = bootstrap_servers
         self.admin_client = self.create_admin()
         self.producer_client = self.create_producer()
+        self.topic_map = {
+            "Transaction": "transactions",
+            "Account": "accounts",
+            "Customer": "customers",
+            "SmallTransaction": "",
+        }
 
     def create_admin(self):
         return KafkaAdminClient(bootstrap_servers=self.bootstrap_servers)
@@ -194,23 +217,32 @@ class KafkaClient:
                 ) from err
         logging.info(f"topics created successfully - {', '.join([t.name for t in topics])}")
 
-    def send(self, items: typing.List[typing.Union[Transaction, Account, Customer]]):
-        logging.info(f"sending records, topic - {items[0].__class__.__name__.lower()}s ...")
+    def send(
+        self,
+        items: typing.List[typing.Union[Transaction, Account, Customer]],
+        topic_info: typing.Tuple,
+    ):
+        topic_name, key_attr = topic_info
+        topics = (
+            [topic_name]
+            if topic_name != "transactions"
+            else [topic_name, f"{topic_name}.credits", f"{topic_name}.debits"]
+        )
+        logging.info(f"sending records to topic - {', '.join(topics)}...")
         for item in items:
             try:
-                topic, key, value = self.set_topic_key_value(item)
-                self.producer_client.send(topic, key=key, value=value)
+                value = item.asdict()
+                key = {}
+                key[key_attr] = value[key_attr]
+                if topic_name == "transactions":
+                    extra_topic_suffix = "credits" if value["type"] == "Credit" else "debits"
+                    self.producer_client.send(
+                        f"{topic_name}.{extra_topic_suffix}", key=key, value=value
+                    )
+                self.producer_client.send(topic_name, key=key, value=value)
             except Exception as err:
                 raise RuntimeError("fails to send a message") from err
         self.producer_client.flush()
-
-    def set_topic_key_value(self, item: typing.Union[Transaction, Account, Customer]):
-        value = item.asdict()
-        class_name = item.__class__.__name__.lower()
-        attr_key = f"{class_name}Id"
-        key = {}
-        key[attr_key] = value[attr_key]
-        return f"{class_name}s", key, value
 
     def serialize(self, obj):
         if isinstance(obj, datetime.datetime):
@@ -223,9 +255,12 @@ class KafkaClient:
 if __name__ == "__main__":
     client = KafkaClient("localhost:19092")
 
-    # create topics
+    ## create topics
     topics = [
         NewTopic(name="transactions", num_partitions=5, replication_factor=1),
+        NewTopic(name="transactions.debits", num_partitions=5, replication_factor=1),
+        NewTopic(name="transactions.credits", num_partitions=5, replication_factor=1),
+        NewTopic(name="small-transactions", num_partitions=1, replication_factor=1),
         NewTopic(
             name="customers",
             num_partitions=1,
@@ -238,13 +273,25 @@ if __name__ == "__main__":
             replication_factor=1,
             topic_configs={"cleanup.policy": "compact", "retention.ms": 600000},
         ),
-        NewTopic(name="transactions.debits", num_partitions=5, replication_factor=1),
-        NewTopic(name="transactions.credits", num_partitions=5, replication_factor=1),
     ]
 
     client.create_topics(topics, to_recreate=True)
 
-    # send messages
-    client.send(Account.read())
-    client.send(Customer.read())
-    client.send(Transaction.read())
+    ## send messages
+    DATA_PATH = os.getenv("DATA_PATH", ".external/data")
+    client.send(
+        Account.read(file_path=os.path.join(DATA_PATH, "accounts.csv")),
+        topic_info=("accounts", "accountId"),
+    )
+    client.send(
+        Customer.read(file_path=os.path.join(DATA_PATH, "customers.csv")),
+        topic_info=("customers", "customerId"),
+    )
+    client.send(
+        Transaction.read(file_path=os.path.join(DATA_PATH, "transactions.csv")),
+        topic_info=("transactions", "transactionId"),
+    )
+    client.send(
+        Transaction.read(file_path=os.path.join(DATA_PATH, "transactions-small.csv")),
+        topic_info=("small-transactions", "transactionId"),
+    )
