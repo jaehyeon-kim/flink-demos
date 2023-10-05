@@ -4,7 +4,7 @@
 .deep-dive
 *.pem
 *-demo-data
-pyflink-udemy/flink-sql-connector-kafka-*.jar
+flink-sql-connector-kafka-*.jar
 pyflink-udemy/revenue.csv
 .external
 kda-package*
