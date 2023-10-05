@@ -4,7 +4,7 @@ from pyflink.common import Configuration
 from pyflink.datastream import StreamExecutionEnvironment
 from pyflink.table import StreamTableEnvironment, EnvironmentSettings
 
-BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS", "redpanda:9092")
+BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS", "localhost:19092")
 RUNTIME_ENV = os.getenv("RUNTIME_ENV", "local")
 
 config = Configuration()
@@ -80,4 +80,4 @@ WHERE rowNum = 1;
     """
 ).print()
 
-# BOOTSTRAP_SERVERS=localhost:19092 python 01_deduplication.py
+# python s01_deduplication.py

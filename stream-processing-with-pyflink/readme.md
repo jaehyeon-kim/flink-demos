@@ -485,3 +485,54 @@ FROM transactions AS t
 JOIN accounts FOR SYSTEM_TIME AS OF t.eventTime_ltz AS a
 ON t.accountId = a.accountId;
 ```
+
+## User Defined Functions
+
+```sql
+SET sql-client.execution.result-mode = 'tableau';
+
+CREATE FUNCTION async_lookup AS 'python_udf.async_lookup'
+LANGUAGE PYTHON;
+
+CREATE TABLE small_trans (
+  transactionId       STRING,
+  accountId           STRING,
+  customerId          STRING,
+  dataTime            BIGINT,
+  dataTime_ltz AS TO_TIMESTAMP_LTZ(dataTime, 3),
+  dataTimeFormatted   STRING,
+  type                STRING,
+  operation           STRING,
+  amount              DOUBLE,
+  balance             DOUBLE,
+  `ts` TIMESTAMP(3) METADATA FROM 'timestamp',
+  WATERMARK FOR dataTime_ltz AS dataTime_ltz
+) WITH (
+  'connector' = 'kafka',
+  'topic' = 'small-transactions',
+  'properties.bootstrap.servers' = 'redpanda:9092',
+  'properties.group.id' = 'group.small-trans',
+  'format' = 'json',
+  'scan.startup.mode' = 'earliest-offset'
+);
+
+CREATE TABLE trans_resp(
+  transactionId       STRING,
+  resp Row<`resp_1` STRING, `resp_2` STRING, `resp_3` STRING, `total_resp_time` FLOAT>
+) WITH (
+  'connector' = 'kafka',
+  'topic' = 'trans-resp',
+  'properties.bootstrap.servers' = 'redpanda:9092',
+  'properties.group.id' = 'group.trans-resp',
+  'format' = 'json'
+);
+
+INSERT INTO trans_resp
+  SELECT transactionId, async_lookup(transactionId) AS resp FROM small_trans;
+
+SELECT
+  transactionId,
+  async_lookup(transactionId) AS resp
+FROM small_trans
+LIMIT 5;
+```
