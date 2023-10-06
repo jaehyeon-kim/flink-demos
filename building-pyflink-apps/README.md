@@ -4,32 +4,32 @@ Implement exercises of [Building Apache Flink Applications in Java](https://deve
 
 1. Apache Flink with Java - An Introduction
 2. Datastream Programming
-3. [x] How to Start Flink and Get Setup (Exercise)
+3. How to Start Flink and Get Setup (Exercise) [x]
    - [Dockerfile](./Dockerfile): `docker build -t=building-pyflink-apps:1.17.1 .`
    - [docker-compose.yml](./docker-compose.yml): `docker-compose up -d`
 4. The Flink Job Lifecycle
    - [s04_intro.py](./src/s04_intro.py)
-5. [x] Running a Flink Job (Exercise)
+5. Running a Flink Job (Exercise) [x]
    - [s05_data_gen.py](./src/s05_data_gen.py)
    - Pyflink doesn't have DataGen DataStream connector. Use Kafka producers instead.
 6. Anatomy of a Stream
 7. Flink Data Sources
-8. [x] Creating a Flink Data Source (Exercise)
+8. Creating a Flink Data Source (Exercise) [x]
    - [s08_create_source.py](./src/s08_create_source.py)
 9. Serializers & Deserializers
-10. [x] Deserializing Messages in Flink (Exercise)
+10. Deserializing Messages in Flink (Exercise) [x]
     - [s10_deserialization.py](./src/s10_deserialization.py)
     - No change to the previous exercise because of no POJO serialization on Pyflink
 11. Transforming Data in Flink
-12. [ ] Flink Data Transformations (Exercise)
+12. Flink Data Transformations (Exercise) [ ]
 13. Flink Data Sinks
-14. [ ] Creating a Flink Data Sink (Exercise)
+14. Creating a Flink Data Sink (Exercise) [ ]
 15. Creating Branching Data Streams in Flink
-16. [ ] Merging Flink Data Streams (Exercise)
+16. Merging Flink Data Streams (Exercise) [ ]
 17. Windowing and Watermarks in Flink
-18. [ ] Aggregating Flink Data using Windowing (Exercise)
+18. Aggregating Flink Data using Windowing (Exercise) [ ]
 19. Working with Keyed State in Flink
-20. [ ] Managing State in Flink (Exercise)
+20. Managing State in Flink (Exercise) [ ]
 21. Closing Remarks
 
 ## Reference
