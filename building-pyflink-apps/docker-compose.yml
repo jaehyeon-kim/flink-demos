@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   jobmanager:
-    image: flink-sql-cookbook:1.17.1
+    image: building-pyflink-apps:1.17.1
     command: jobmanager
     container_name: jobmanager
     ports:
@@ -25,7 +25,7 @@ services:
     volumes:
       - ./src:/tmp/src
   taskmanager-0:
-    image: flink-sql-cookbook:1.17.1
+    image: building-pyflink-apps:1.17.1
     command: taskmanager
     container_name: taskmanager-0
     networks:
@@ -48,7 +48,7 @@ services:
     depends_on:
       - jobmanager
   taskmanager-1:
-    image: flink-sql-cookbook:1.17.1
+    image: building-pyflink-apps:1.17.1
     command: taskmanager
     container_name: taskmanager-1
     networks:

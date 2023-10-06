@@ -1,11 +1,12 @@
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 
-env = StreamExecutionEnvironment.get_execution_environment()
-env.set_runtime_mode(RuntimeExecutionMode.BATCH)
+if __name__ == "__main__":
+    env = StreamExecutionEnvironment.get_execution_environment()
+    env.set_runtime_mode(RuntimeExecutionMode.BATCH)
 
-env.from_collection([1, 2, 3, 4, 5]).print()
+    env.from_collection([1, 2, 3, 4, 5]).print()
 
-env.execute()
+    env.execute()
 
 """
 > local execution
