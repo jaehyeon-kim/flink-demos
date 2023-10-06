@@ -2,12 +2,15 @@
 
 Implement exercises of [Building Apache Flink Applications in Java](https://developer.confluent.io/courses/flink-java/overview/) using Pyflink.
 
+- ✅ - exercise
+- ☑️ - course material
+
 1. Apache Flink with Java - An Introduction
 2. Datastream Programming
 3. ✅ How to Start Flink and Get Setup (Exercise)
    - [Dockerfile](./Dockerfile): `docker build -t=building-pyflink-apps:1.17.1 .`
    - [docker-compose.yml](./docker-compose.yml): `docker-compose up -d`
-4. The Flink Job Lifecycle
+4. ☑️ The Flink Job Lifecycle
    - [s04_intro.py](./src/s04_intro.py)
 5. ✅ Running a Flink Job (Exercise)
    - [s05_data_gen.py](./src/s05_data_gen.py)
@@ -20,7 +23,10 @@ Implement exercises of [Building Apache Flink Applications in Java](https://deve
 10. ✅ Deserializing Messages in Flink (Exercise)
     - [s10_deserialization.py](./src/s10_deserialization.py)
     - No change to the previous exercise because of no POJO serialization on Pyflink
-11. Transforming Data in Flink
+11. ☑️ Transforming Data in Flink
+    - [s11_transformation.py](./src/s11_transformation.py)
+    - [s11_process_function.py](./src/s11_process_function.py)
+    - _map_, _flat map_, _filter_ and _reduce_ transformations are performed using built-in operators and process functions.
 12. Flink Data Transformations (Exercise)
 13. Flink Data Sinks
 14. Creating a Flink Data Sink (Exercise)
