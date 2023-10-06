@@ -14,7 +14,7 @@ from kafka.errors import KafkaError, UnknownTopicOrPartitionError, TopicAlreadyE
 
 
 @dataclasses.dataclass
-class SkyOneData:
+class SkyoneData:
     email_address: str
     flight_departure_time: str
     iata_departure_code: str
@@ -88,9 +88,9 @@ class DataGenerator:
             seconds=random.randrange(60),
         )
 
-    def generate_sky_one_data(self) -> SkyOneData:
+    def generate_sky_one_data(self) -> SkyoneData:
         departure_time = self.generate_departure_time()
-        return SkyOneData(
+        return SkyoneData(
             email_address=self.generate_email(),
             flight_departure_time=departure_time,
             iata_departure_code=self.generate_airport_code(),
@@ -119,7 +119,7 @@ class DataGenerator:
             aircraft_details=f"Aircraft{self.generate_string(4)}",
         )
 
-    def generate_items(self) -> typing.List[typing.Union[SkyOneData, SunsetData]]:
+    def generate_items(self) -> typing.List[typing.Union[SkyoneData, SunsetData]]:
         sky_ones = [self.generate_sky_one_data() for _ in range(random.randint(1, 3))]
         sunsets = [self.generate_sunset_data() for _ in range(random.randint(1, 3))]
         return sky_ones + sunsets
@@ -201,7 +201,7 @@ class KafkaClient:
 
     def serialize(self, obj):
         if isinstance(obj, datetime.datetime):
-            return obj.isoformat()
+            return obj.isoformat(timespec="milliseconds")
         if isinstance(obj, datetime.date):
             return str(obj)
         return obj

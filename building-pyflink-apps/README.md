@@ -4,12 +4,17 @@ Implement exercises of [Building Apache Flink Applications in Java](https://deve
 
 - Overview
 - Datastream Programming
-- [ ] Setup your Flink environment (Exercise)
+- [x] Setup your Flink environment (Exercise)
+  - [Dockerfile](./Dockerfile): `docker build -t=building-pyflink-apps:1.17.1 .`
+  - [docker-compose.yml](./docker-compose.yml): `docker-compose up -d`
 - The Flink Job Lifecycle
-- [ ] Running a Flink Job (Exercise)
+- [x] Running a Flink Job (Exercise)
+  - [s05_data_gen.py](./src/s05_data_gen.py)
+  - Pyflink doesn't have DataGen DataStream connector. Use Kafka producers instead.
 - Anatomy of a Stream
 - Flink Data Sources
-- [ ] Creating a Flink Data Source (Exercise)
+- [x] Creating a Flink Data Source (Exercise)
+  - [s08_create_source.py](./src/s08_create_source.py)
 - Serializers & Deserializers
 - [ ] Deserializing Messages in Flink (Exercise)
 - Transforming Data in Flink
