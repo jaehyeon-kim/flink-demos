@@ -49,10 +49,10 @@ if __name__ == "__main__":
         .build()
     )
 
-    sky_one_stream = env.from_source(
+    skyone_stream = env.from_source(
         skyone_source, WatermarkStrategy.no_watermarks(), "skyone_source"
     )
 
-    sky_one_stream.print()
+    skyone_stream.print()
 
     env.execute("flight_importer")
