@@ -6,17 +6,21 @@ from pyflink.common.serialization import SimpleStringSchema
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.connectors.kafka import KafkaSource, KafkaOffsetsInitializer
 
+from models import SkyoneData
+
 RUNTIME_ENV = os.getenv("RUNTIME_ENV", "local")
 BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS", "localhost:29092")
 
 if __name__ == "__main__":
     """
     ## local execution
-    python src/s08_create_source.py
+    python src/s10_deserialization.py
 
     ## cluster execution
     docker exec jobmanager /opt/flink/bin/flink run \
-        --python /tmp/src/s08_create_source.py -d
+        --python /tmp/src/s10_deserialization.py \
+        --pyFiles file:///tmp/src/models.py \
+        -d
     """
 
     logging.basicConfig(
@@ -53,6 +57,6 @@ if __name__ == "__main__":
         skyone_source, WatermarkStrategy.no_watermarks(), "skyone_source"
     )
 
-    skyone_stream.print()
+    skyone_stream.map(SkyoneData.parse).print()
 
     env.execute("flight_importer")
