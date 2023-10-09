@@ -3,7 +3,6 @@ import datetime
 import random
 import string
 import json
-import dataclasses
 import logging
 import typing
 import time
@@ -12,45 +11,8 @@ from kafka import KafkaAdminClient, KafkaProducer
 from kafka.admin import NewTopic
 from kafka.errors import KafkaError, UnknownTopicOrPartitionError, TopicAlreadyExistsError
 
-
-@dataclasses.dataclass
-class SkyoneData:
-    email_address: str
-    flight_departure_time: str
-    iata_departure_code: str
-    flight_arrival_time: str
-    iata_arrival_code: str
-    flight_number: str
-    confirmation: str
-    ticket_price: int
-    aircraft: str
-    booking_agency_email: str
-
-    def asdict(self):
-        return dataclasses.asdict(self)
-
-    def topic_name(self):
-        return "skyone"
-
-
-@dataclasses.dataclass
-class SunsetData:
-    customer_email_address: str
-    departure_time: str
-    departure_airport: str
-    arrival_time: str
-    arrival_airport: str
-    flight_duration: int
-    flight_id: str
-    reference_number: str
-    total_price: int
-    aircraft_details: str
-
-    def asdict(self):
-        return dataclasses.asdict(self)
-
-    def topic_name(self):
-        return "sunset"
+from models import SkyoneData, SunsetData
+from utils import serialize
 
 
 class DataGenerator:
@@ -75,7 +37,7 @@ class DataGenerator:
 
     def generate_departure_time(self):
         return datetime.datetime.now() + datetime.timedelta(
-            days=random.randrange(60),
+            days=random.randrange(-20, 60),
             hours=random.randrange(24),
             minutes=random.randrange(60),
             seconds=random.randrange(60),
@@ -88,7 +50,7 @@ class DataGenerator:
             seconds=random.randrange(60),
         )
 
-    def generate_sky_one_data(self) -> SkyoneData:
+    def generate_skyone_data(self) -> SkyoneData:
         departure_time = self.generate_departure_time()
         return SkyoneData(
             email_address=self.generate_email(),
@@ -120,9 +82,9 @@ class DataGenerator:
         )
 
     def generate_items(self) -> typing.List[typing.Union[SkyoneData, SunsetData]]:
-        sky_ones = [self.generate_sky_one_data() for _ in range(random.randint(1, 3))]
+        skyones = [self.generate_skyone_data() for _ in range(random.randint(1, 3))]
         sunsets = [self.generate_sunset_data() for _ in range(random.randint(1, 3))]
-        return sky_ones + sunsets
+        return skyones + sunsets
 
 
 class KafkaClient:
@@ -143,8 +105,8 @@ class KafkaClient:
     def create_producer(self):
         return KafkaProducer(
             bootstrap_servers=self.bootstrap_servers,
-            key_serializer=lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
-            value_serializer=lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
+            key_serializer=lambda v: json.dumps(v, default=serialize).encode("utf-8"),
+            value_serializer=lambda v: json.dumps(v, default=serialize).encode("utf-8"),
             api_version=(2, 8, 1),
         )
 
@@ -179,32 +141,30 @@ class KafkaClient:
         while True:
             data_gen = DataGenerator()
             items = data_gen.generate_items()
-            len_sky = len([item for item in items if item.topic_name() == "skyone"])
+            len_sky = len([item for item in items if item.__class__.__name__ == "SkyoneData"])
             logging.info(f"{len_sky} items from sky one and {len(items) - len_sky} from sunset")
             for item in items:
                 try:
-                    key = {
-                        "ref": item.confirmation
-                        if item.topic_name() == "skyone"
-                        else item.reference_number
-                    }
+                    if item.__class__.__name__ == "SkyoneData":
+                        topic_name = "skyone"
+                        key = {"ref": item.confirmation}
+                        arrival_time = item.flight_arrival_time
+                    else:
+                        topic_name = "sunset"
+                        key = {"ref": item.reference_number}
+                        arrival_time = item.arrival_time
                     self.producer_client.send(
-                        item.topic_name(),
+                        topic=topic_name,
                         key=key,
                         value=item.asdict(),
                     )
-                    logging.info(f"record sent, topic - {item.topic_name()}, ref - {key['ref']}")
+                    logging.info(
+                        f"record sent, topic - {topic_name}, ref - {key['ref']}, arrival time - {arrival_time} "
+                    )
                 except Exception as err:
                     raise RuntimeError("fails to send a message") from err
             logging.info(f"wait for {wait_for} seconds...")
             time.sleep(wait_for)
-
-    def serialize(self, obj):
-        if isinstance(obj, datetime.datetime):
-            return obj.isoformat(timespec="milliseconds")
-        if isinstance(obj, datetime.date):
-            return str(obj)
-        return obj
 
 
 if __name__ == "__main__":
