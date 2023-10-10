@@ -13,6 +13,7 @@ class FlightData:
     arrival_airport_code: str
     flight_number: str
     confirmation: str
+    source: str
 
 
 @dataclasses.dataclass
@@ -52,11 +53,8 @@ class SkyoneData:
             data.iata_arrival_code,
             data.flight_number,
             data.confirmation,
+            "skyone",
         )
-
-    @staticmethod
-    def is_valid(data: FlightData) -> bool:
-        return datetime.datetime.fromisoformat(data.arrival_time) > datetime.datetime.now()
 
 
 @dataclasses.dataclass
@@ -76,7 +74,25 @@ class SunsetData:
         return dataclasses.asdict(self)
 
     @classmethod
-    def fromjson(cls, msg: typing.Union[str, dict]):
+    def fromstr(cls, msg: typing.Union[str, dict]):
         if isinstance(msg, str):
             msg = json.loads(msg)
         return cls(**msg)
+
+    @staticmethod
+    def parse(value: str):
+        return SunsetData.fromstr(json.loads(value))
+
+    @staticmethod
+    def to_flight_data(value: str) -> FlightData:
+        data = SunsetData.parse(value)
+        return FlightData(
+            data.customer_email_address,
+            data.departure_time,
+            data.departure_airport,
+            data.arrival_time,
+            data.arrival_airport,
+            data.flight_id,
+            data.reference_number,
+            "sunset",
+        )

@@ -1,4 +1,5 @@
 import os
+import datetime
 import logging
 
 from pyflink.common import WatermarkStrategy
@@ -14,7 +15,9 @@ BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS", "localhost:29092")
 
 
 def define_workflow(source_stream: DataStream):
-    flight_stream = source_stream.map(SkyoneData.to_flight_data).filter(SkyoneData.is_valid)
+    flight_stream = source_stream.map(SkyoneData.to_flight_data).filter(
+        lambda data: datetime.datetime.fromisoformat(data.arrival_time) > datetime.datetime.now()
+    )
     return flight_stream
 
 
@@ -65,6 +68,6 @@ if __name__ == "__main__":
     )
 
     define_workflow(skyone_stream).print()
-    # skyone_stream.map(SkyoneData.to_flight_data).filter(SkyoneData.is_valid).print()
+    # skyone_stream.map(SkyoneData.to_flight_data).filter(SkyoneData.is_after).print()
 
     env.execute("flight_importer")

@@ -1,10 +1,12 @@
 import datetime
 import json
+import typing
 import pytest
 
 from pyflink.datastream import StreamExecutionEnvironment
 
 from utils import serialize
+from models import FlightData
 from s05_data_gen import DataGenerator
 from s12_transformation import define_workflow
 
@@ -15,7 +17,7 @@ def env():
     yield env
 
 
-def test_define_workflow_should_convert_data_from_one_streams(env):
+def test_define_workflow_should_convert_data_from_one_stream(env):
     data_gen = DataGenerator()
     source_flight = data_gen.generate_skyone_data()
     source_flight.flight_arrival_time = datetime.datetime.now() + datetime.timedelta(minutes=1)
@@ -23,13 +25,9 @@ def test_define_workflow_should_convert_data_from_one_streams(env):
         collection=[json.dumps(source_flight.asdict(), default=serialize)]
     )
 
-    elements = define_workflow(source_stream).execute_and_collect()
-    element, num = None, 0
-    for e in elements:
-        element = e
-        num += 1
-    assert num == 1
-    assert source_flight.confirmation == element.confirmation
+    elements: typing.List[FlightData] = list(define_workflow(source_stream).execute_and_collect())
+    assert len(elements) == 1
+    assert source_flight.confirmation == next(iter(elements)).confirmation
 
 
 def test_define_workflow_should_filter_out_flights_in_the_past(env):
@@ -45,10 +43,6 @@ def test_define_workflow_should_filter_out_flights_in_the_past(env):
         ]
     )
 
-    elements = define_workflow(source_stream).execute_and_collect()
-    element, num = None, 0
-    for e in elements:
-        element = e
-        num += 1
-    assert num == 1
-    assert new_flight.confirmation == element.confirmation
+    elements: typing.List[FlightData] = list(define_workflow(source_stream).execute_and_collect())
+    assert len(elements) == 1
+    assert new_flight.confirmation == next(iter(elements)).confirmation
