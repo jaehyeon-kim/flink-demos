@@ -1,5 +1,4 @@
-import json
-import typing
+import datetime
 import dataclasses
 
 from pyflink.common import Types, Row
@@ -18,7 +17,16 @@ class FlightData:
     confirmation: str
     source: str
 
-    def to_row(self) -> Row:
+    def get_duration(self):
+        return int(
+            (
+                datetime.datetime.fromisoformat(self.arrival_time)
+                - datetime.datetime.fromisoformat(self.departure_time)
+            ).seconds
+            / 60
+        )
+
+    def to_row(self):
         return Row(
             email_address=self.email_address,
             departure_time=serialize(self.departure_time),
@@ -28,6 +36,19 @@ class FlightData:
             flight_number=self.flight_number,
             confirmation=self.confirmation,
             source=self.source,
+        )
+
+    @classmethod
+    def from_row(cls, row: Row):
+        return cls(
+            email_address=row.email_address,
+            departure_time=row.departure_time,
+            departure_airport_code=row.departure_airport_code,
+            arrival_time=row.arrival_time,
+            arrival_airport_code=row.arrival_airport_code,
+            flight_number=row.flight_number,
+            confirmation=row.confirmation,
+            source=row.source,
         )
 
     @staticmethod
@@ -66,8 +87,78 @@ class FlightData:
             ],
         )
 
-    def convert_to_row(self):
-        pass
+    @staticmethod
+    def to_user_statistics_data(row: Row):
+        data = FlightData.from_row(row)
+        return UserStatistics(data.email_address, data.get_duration(), 1)
+
+
+@dataclasses.dataclass
+class BaseStatistics:
+    email_address: str
+    total_flight_duration: int
+    number_of_flights: int
+
+
+@dataclasses.dataclass
+class UserStatistics(BaseStatistics):
+    def to_row(self):
+        return Row(
+            email_address=self.email_address,
+            total_flight_duration=self.total_flight_duration,
+            number_of_flights=self.number_of_flights,
+        )
+
+    @staticmethod
+    def merge(this: BaseStatistics, that: BaseStatistics):
+        assert this.email_address == that.email_address
+        return UserStatistics(
+            email_address=this.email_address,
+            total_flight_duration=this.total_flight_duration + that.total_flight_duration,
+            number_of_flights=this.number_of_flights + that.number_of_flights,
+        )
+
+    @classmethod
+    def from_flight(cls, data: FlightData):
+        return cls(
+            email_address=data.email_address,
+            total_flight_duration=data.get_duration(),
+            number_of_flights=1,
+        )
+
+    @classmethod
+    def from_row(cls, row: Row):
+        return cls(
+            email_address=row.email_address,
+            total_flight_duration=row.total_flight_duration,
+            number_of_flights=row.number_of_flights,
+        )
+
+    @staticmethod
+    def get_key_type_info():
+        return Types.ROW_NAMED(
+            field_names=[
+                "email_address",
+            ],
+            field_types=[
+                Types.STRING(),
+            ],
+        )
+
+    @staticmethod
+    def get_value_type_info():
+        return Types.ROW_NAMED(
+            field_names=[
+                "email_address",
+                "total_flight_duration",
+                "number_of_flights",
+            ],
+            field_types=[
+                Types.STRING(),
+                Types.INT(),
+                Types.INT(),
+            ],
+        )
 
 
 @dataclasses.dataclass
@@ -101,7 +192,7 @@ class SkyoneData:
             booking_agency_email=row.booking_agency_email,
         )
 
-    def to_row(self) -> Row:
+    def to_row(self):
         return Row(
             email_address=self.email_address,
             flight_departure_time=serialize(self.flight_departure_time),
@@ -145,7 +236,7 @@ class SkyoneData:
         )
 
     @staticmethod
-    def to_flight_data(row: Row) -> FlightData:
+    def to_flight_data(row: Row):
         data = SkyoneData.from_row(row)
         return FlightData(
             data.email_address,
@@ -190,7 +281,7 @@ class SunsetData:
             aircraft_details=row.aircraft_details,
         )
 
-    def to_row(self) -> Row:
+    def to_row(self):
         return Row(
             customer_email_address=self.customer_email_address,
             departure_time=serialize(self.departure_time),
@@ -234,7 +325,7 @@ class SunsetData:
         )
 
     @staticmethod
-    def to_flight_data(row: Row) -> FlightData:
+    def to_flight_data(row: Row):
         data = SunsetData.from_row(row)
         return FlightData(
             data.customer_email_address,

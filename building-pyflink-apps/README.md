@@ -30,14 +30,22 @@ Implement exercises of [Building Apache Flink Applications in Java](https://deve
 12. ✅ Flink Data Transformations (Exercise)
     - [./src/models.py](./src/models.py)
     - [./src/s12_transformation.py](./src/s12_transformation.py)
-    - [./src/test_s12.py](./src/test_s12.py)
+    - [./src/test_s12_transformation.py](./src/test_s12_transformation.py)
 13. Flink Data Sinks
-14. Creating a Flink Data Sink (Exercise)
+14. ✅ Creating a Flink Data Sink (Exercise)
+    - [./src/models.py](./src/models.py)
+    - [./src/s14_sink.py](./src/s14_sink.py)
 15. ☑️ Creating Branching Data Streams in Flink
     - [./src/s15_branching.py](./src/s15_branching.py)
-16. Merging Flink Data Streams (Exercise)
+16. ✅ Merging Flink Data Streams (Exercise)
+    - [./src/models.py](./src/models.py)
+    - [./src/s16_merge.py](./src/s16_merge.py)
+    - [./src/test_s16_merge.py](./src/test_s16_merge.py)
 17. Windowing and Watermarks in Flink
-18. Aggregating Flink Data using Windowing (Exercise)
+18. ✅ Aggregating Flink Data using Windowing (Exercise)
+    - [./src/models.py](./src/models.py)
+    - [./src/s18_aggregation.py](./src/s18_aggregation.py)
+    - [./src/test_s18_aggregation.py](./src/test_s18_aggregation.py)
 19. Working with Keyed State in Flink
 20. Managing State in Flink (Exercise)
 21. Closing Remarks

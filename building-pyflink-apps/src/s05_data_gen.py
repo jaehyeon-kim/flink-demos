@@ -185,6 +185,7 @@ if __name__ == "__main__":
             NewTopic(name="skyone", num_partitions=5, replication_factor=1),
             NewTopic(name="sunset", num_partitions=5, replication_factor=1),
             NewTopic(name="flightdata", num_partitions=5, replication_factor=1),
+            NewTopic(name="userstatistics", num_partitions=5, replication_factor=1),
         ]
         logging.info(f"create topics - {', '.join(t.name for t in topics)}")
         client.create_topics(topics, to_recreate=True)
