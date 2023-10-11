@@ -2,9 +2,7 @@ import os
 import datetime
 import logging
 
-from pyflink.common import Types, Row
 from pyflink.common import WatermarkStrategy
-from pyflink.common.serialization import SimpleStringSchema
 from pyflink.datastream import DataStream
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.connectors.kafka import (
@@ -14,7 +12,7 @@ from pyflink.datastream.connectors.kafka import (
     KafkaRecordSerializationSchema,
     DeliveryGuarantee,
 )
-from pyflink.datastream.formats.json import JsonRowSerializationSchema
+from pyflink.datastream.formats.json import JsonRowSerializationSchema, JsonRowDeserializationSchema
 
 from models import SkyoneData, SunsetData, FlightData
 
@@ -32,27 +30,15 @@ def define_workflow(skyone_stream: DataStream, sunset_stream: DataStream):
     return flight_stream_from_skyone.union(flight_stream_from_sunset)
 
 
-def convert_to_row(obj: FlightData):
-    return Row(
-        email_address=obj.email_address,
-        departure_time=obj.departure_time,
-        departure_airport_code=obj.departure_airport_code,
-        arrival_time=obj.arrival_time,
-        arrival_airport_code=obj.arrival_airport_code,
-        flight_number=obj.flight_number,
-        confirmation=obj.confirmation,
-    )
-
-
 if __name__ == "__main__":
     """
     ## local execution
-    python src/s12_transformation.py
+    python src/s16_merge.py
 
     ## cluster execution
     docker exec jobmanager /opt/flink/bin/flink run \
-        --python /tmp/src/s12_transformation.py \
-        --pyFiles file:///tmp/src/models.py \
+        --python /tmp/src/s16_merge.py \
+        --pyFiles file:///tmp/src/models.py,file:///tmp/src/utils.py \
         -d
     """
 
@@ -82,7 +68,11 @@ if __name__ == "__main__":
         .set_topics("skyone")
         .set_group_id("group.skyone")
         .set_starting_offsets(KafkaOffsetsInitializer.latest())
-        .set_value_only_deserializer(SimpleStringSchema())
+        .set_value_only_deserializer(
+            JsonRowDeserializationSchema.builder()
+            .type_info(SkyoneData.get_value_type_info())
+            .build()
+        )
         .build()
     )
 
@@ -92,7 +82,11 @@ if __name__ == "__main__":
         .set_topics("sunset")
         .set_group_id("group.sunset")
         .set_starting_offsets(KafkaOffsetsInitializer.latest())
-        .set_value_only_deserializer(SimpleStringSchema())
+        .set_value_only_deserializer(
+            JsonRowDeserializationSchema.builder()
+            .type_info(SunsetData.get_value_type_info())
+            .build()
+        )
         .build()
     )
 
@@ -104,66 +98,30 @@ if __name__ == "__main__":
         sunset_source, WatermarkStrategy.no_watermarks(), "sunset_source"
     )
 
-    value_schema = (
-        JsonRowSerializationSchema.builder()
-        .with_type_info(
-            Types.ROW_NAMED(
-                field_names=[
-                    "email_address",
-                    "departure_time",
-                    "departure_airport_code",
-                    "arrival_time",
-                    "arrival_airport_code",
-                    "flight_number",
-                    "confirmation",
-                    "source",
-                ],
-                field_types=[
-                    Types.STRING(),
-                    Types.STRING(),
-                    Types.STRING(),
-                    Types.STRING(),
-                    Types.STRING(),
-                    Types.STRING(),
-                    Types.STRING(),
-                    Types.STRING(),
-                ],
-            )
-        )
-        .build()
-    )
-
-    key_schema = (
-        JsonRowSerializationSchema.builder()
-        .with_type_info(
-            Types.ROW_NAMED(
-                field_names=[
-                    "confirmation",
-                ],
-                field_types=[
-                    Types.STRING(),
-                ],
-            )
-        )
-        .build()
-    )
-
     flight_sink = (
         KafkaSink.builder()
         .set_bootstrap_servers(BOOTSTRAP_SERVERS)
         .set_record_serializer(
             KafkaRecordSerializationSchema.builder()
             .set_topic("flightdata")
-            # .set_key_serialization_schema(key_schema)
-            .set_value_serialization_schema(value_schema)
+            .set_key_serialization_schema(
+                JsonRowSerializationSchema.builder()
+                .with_type_info(FlightData.get_key_type_info())
+                .build()
+            )
+            .set_value_serialization_schema(
+                JsonRowSerializationSchema.builder()
+                .with_type_info(FlightData.get_value_type_info())
+                .build()
+            )
             .build()
         )
         .set_delivery_guarantee(DeliveryGuarantee.AT_LEAST_ONCE)
         .build()
     )
 
-    # define_workflow(skyone_stream).map(convert_to_row).sink_to(flight_sink).name("flightdata_sink")
-
-    define_workflow(skyone_stream, sunset_stream).print()
+    define_workflow(skyone_stream, sunset_stream).map(
+        lambda d: d.to_row(), output_type=FlightData.get_value_type_info()
+    ).sink_to(flight_sink).name("flightdata_sink")
 
     env.execute("flight_importer")

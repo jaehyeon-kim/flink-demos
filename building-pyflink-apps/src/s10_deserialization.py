@@ -2,9 +2,9 @@ import os
 import logging
 
 from pyflink.common import WatermarkStrategy
-from pyflink.common.serialization import SimpleStringSchema
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.connectors.kafka import KafkaSource, KafkaOffsetsInitializer
+from pyflink.datastream.formats.json import JsonRowDeserializationSchema
 
 from models import SkyoneData
 
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     ## cluster execution
     docker exec jobmanager /opt/flink/bin/flink run \
         --python /tmp/src/s10_deserialization.py \
-        --pyFiles file:///tmp/src/models.py \
+        --pyFiles file:///tmp/src/models.py,file:///tmp/src/utils.py \
         -d
     """
 
@@ -49,7 +49,11 @@ if __name__ == "__main__":
         .set_topics("skyone")
         .set_group_id("group.skyone")
         .set_starting_offsets(KafkaOffsetsInitializer.latest())
-        .set_value_only_deserializer(SimpleStringSchema())
+        .set_value_only_deserializer(
+            JsonRowDeserializationSchema.builder()
+            .type_info(SkyoneData.get_value_type_info())
+            .build()
+        )
         .build()
     )
 
@@ -57,6 +61,6 @@ if __name__ == "__main__":
         skyone_source, WatermarkStrategy.no_watermarks(), "skyone_source"
     )
 
-    skyone_stream.map(SkyoneData.parse).print()
+    skyone_stream.map(SkyoneData.from_row).print()
 
     env.execute("flight_importer")
