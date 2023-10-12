@@ -1,10 +1,13 @@
 import os
 import logging
+from typing import Iterable
 
 from pyflink.common import WatermarkStrategy
 from pyflink.datastream import DataStream
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.window import TumblingEventTimeWindows, Time
+from pyflink.datastream.state import ValueStateDescriptor
+from pyflink.datastream.functions import ProcessWindowFunction, RuntimeContext
 from pyflink.datastream.connectors.kafka import (
     KafkaSource,
     KafkaOffsetsInitializer,
@@ -20,12 +23,39 @@ RUNTIME_ENV = os.getenv("RUNTIME_ENV", "local")
 BOOTSTRAP_SERVERS = os.getenv("BOOTSTRAP_SERVERS", "localhost:29092")
 
 
+class ProcessUserStatisticsFunction(ProcessWindowFunction):
+    def __init__(self):
+        self.state_descriptor = None
+
+    def open(self, context: RuntimeContext):
+        self.state_descriptor = ValueStateDescriptor(
+            "User Statistics", UserStatistics.get_value_type_info()
+        )
+
+    def process(
+        self, key: str, context: "ProcessWindowFunction.Context", elements: Iterable[UserStatistics]
+    ) -> Iterable:
+        state = context.global_state().get_state(self.state_descriptor)
+        accumulated_stats = state.value()
+        for new_stats in elements:
+            # can't use python object, convert to row for state value
+            if accumulated_stats is None:
+                accumulated_stats = new_stats.to_row()
+            else:
+                accumulated_stats = UserStatistics.merge(
+                    UserStatistics.from_row(accumulated_stats), new_stats
+                ).to_row()
+        state.update(accumulated_stats)
+        # return back to python class
+        yield UserStatistics.from_row(accumulated_stats)
+
+
 def define_workflow(flight_data_stream: DataStream):
     return (
         flight_data_stream.map(FlightData.to_user_statistics_data)
         .key_by(lambda s: s.email_address)
         .window(TumblingEventTimeWindows.of(Time.minutes(1)))
-        .reduce(UserStatistics.merge)
+        .reduce(UserStatistics.merge, window_function=ProcessUserStatisticsFunction())
     )
 
 
@@ -33,11 +63,11 @@ if __name__ == "__main__":
     """
     ## local execution
     ## it takes too long to launch in a local cluster, better to submit it to cluster
-    python src/s18_aggregation.py
+    python src/s20_manage_state.py
 
     ## cluster execution
     docker exec jobmanager /opt/flink/bin/flink run \
-        --python /tmp/src/s18_aggregation.py \
+        --python /tmp/src/s20_manage_state.py \
         --pyFiles file:///tmp/src/models.py,file:///tmp/src/utils.py \
         -d
     """

@@ -1,15 +1,14 @@
-import datetime
 import typing
 import time
 import pytest
 
-from pyflink.common import WatermarkStrategy
+from pyflink.common import WatermarkStrategy, Row
 from pyflink.common.watermark_strategy import TimestampAssigner
 from pyflink.datastream import StreamExecutionEnvironment
 
 from models import UserStatistics
-from helpers import build_flight, build_user_statistics
-from s18_aggregation import define_workflow
+from helpers import build_flight
+from s20_manage_state import define_workflow
 
 
 @pytest.fixture(scope="module")
@@ -29,45 +28,6 @@ def default_watermark_strategy():
     )
 
 
-def test_user_statistics_should_create_statistics_using_flight_data():
-    flight = build_flight()
-    stats = UserStatistics.from_flight(flight)
-
-    expected_duration = int(
-        (
-            datetime.datetime.fromisoformat(flight.arrival_time)
-            - datetime.datetime.fromisoformat(flight.departure_time)
-        ).seconds
-        / 60
-    )
-
-    assert flight.email_address == stats.email_address
-    assert expected_duration == stats.total_flight_duration
-    assert 1 == stats.number_of_flights
-
-
-def test_user_statistics_should_merge_two_user_statistics():
-    stats1 = build_user_statistics()
-    stats2 = build_user_statistics(email_address=stats1.email_address)
-
-    merged = UserStatistics.merge(stats1, stats2)
-
-    assert stats1.email_address == merged.email_address
-    assert (
-        stats1.total_flight_duration + stats2.total_flight_duration
-    ) == merged.total_flight_duration
-    assert 2 == merged.number_of_flights
-
-
-def test_user_statistics_should_fail_for_different_email_address():
-    stats1 = build_user_statistics()
-    stats2 = build_user_statistics(email_address="different@email.address")
-
-    assert stats1.email_address != stats2.email_address
-    with pytest.raises(AssertionError):
-        UserStatistics.merge(stats1, stats2)
-
-
 def test_define_workflow_should_convert_flight_data_to_user_statistics(
     env, default_watermark_strategy
 ):
@@ -79,6 +39,7 @@ def test_define_workflow_should_convert_flight_data_to_user_statistics(
     elements: typing.List[UserStatistics] = list(
         define_workflow(flight_stream).execute_and_collect()
     )
+
     expected = UserStatistics.from_flight(flight_data)
 
     assert expected.email_address == next(iter(elements)).email_address
@@ -126,8 +87,6 @@ def test_define_workflow_should_window_statistics_by_minute(env):
     class CustomTimestampAssigner(TimestampAssigner):
         def extract_timestamp(self, value, record_timestamp):
             if value.departure_airport_code == "LATE":
-                # higher than 27300 makes a separate window
-                # shouldn't it be values lower than 60000???
                 return int(time.time_ns() / 1000000) + 60000
             else:
                 return int(time.time_ns() / 1000000)
@@ -149,11 +108,11 @@ def test_define_workflow_should_window_statistics_by_minute(env):
     expected_1 = UserStatistics.merge(
         UserStatistics.from_flight(flight_data_1), UserStatistics.from_flight(flight_data_2)
     )
-    expected_2 = UserStatistics.from_flight(flight_data_3)
+    expected_2 = UserStatistics.merge(expected_1, UserStatistics.from_flight(flight_data_3))
 
     assert len(elements) == 2
     for e in elements:
-        if e.number_of_flights > 1:
+        if e.number_of_flights < 3:
             assert e.total_flight_duration == expected_1.total_flight_duration
         else:
             assert e.total_flight_duration == expected_2.total_flight_duration
