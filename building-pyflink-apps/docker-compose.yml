@@ -1,0 +1,138 @@
+version: "3.5"
+
+services:
+  jobmanager:
+    image: building-pyflink-apps:1.17.1
+    command: jobmanager
+    container_name: jobmanager
+    ports:
+      - "8081:8081"
+    networks:
+      - appnet
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=docker
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+        rest.flamegraph.enabled: true
+        web.backpressure.refresh-interval: 10000
+    volumes:
+      - ./src:/tmp/src
+  taskmanager-0:
+    image: building-pyflink-apps:1.17.1
+    command: taskmanager
+    container_name: taskmanager-0
+    networks:
+      - appnet
+    volumes:
+      - flink_data_0:/tmp/
+      - ./src:/tmp/src
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=docker
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 5
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+    depends_on:
+      - jobmanager
+  taskmanager-1:
+    image: building-pyflink-apps:1.17.1
+    command: taskmanager
+    container_name: taskmanager-1
+    networks:
+      - appnet
+    volumes:
+      - flink_data_1:/tmp/
+      - ./src:/tmp/src
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=docker
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 5
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+    depends_on:
+      - jobmanager
+  zookeeper:
+    image: bitnami/zookeeper:3.5
+    container_name: zookeeper
+    ports:
+      - "2181"
+    networks:
+      - appnet
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - zookeeper_data:/bitnami/zookeeper
+  kafka-0:
+    image: bitnami/kafka:2.8.1
+    container_name: kafka-0
+    expose:
+      - 9092
+    ports:
+      - "29092:29092"
+    networks:
+      - appnet
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_BROKER_ID=0
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,EXTERNAL://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_NUM_PARTITIONS=5
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
+    volumes:
+      - kafka_0_data:/bitnami/kafka
+    depends_on:
+      - zookeeper
+  kafka-ui:
+    image: provectuslabs/kafka-ui:master
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    networks:
+      - appnet
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-0:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      - zookeeper
+      - kafka-0
+
+networks:
+  appnet:
+    name: app-network
+
+volumes:
+  flink_data_0:
+    driver: local
+    name: flink_data_0
+  flink_data_1:
+    driver: local
+    name: flink_data_1
+  zookeeper_data:
+    driver: local
+    name: zookeeper_data
+  kafka_0_data:
+    driver: local
+    name: kafka_0_data

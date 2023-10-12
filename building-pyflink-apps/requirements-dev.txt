@@ -1,0 +1,6 @@
+-r requirements.txt
+kafka-python==2.0.2
+apache-flink==1.17.1
+black
+pytest
+pytest-cov
