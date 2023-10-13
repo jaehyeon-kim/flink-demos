@@ -99,26 +99,15 @@ resource "aws_security_group_rule" "msk_vpn_inbound" {
   source_security_group_id = aws_security_group.vpn[0].id
 }
 
-resource "aws_security_group_rule" "msk_producer_inbound" {
+resource "aws_security_group_rule" "msk_kafka_producer_inbound" {
   count                    = local.producer.to_create ? 1 : 0
   type                     = "ingress"
-  description              = "lambda producer access"
+  description              = "lambda kafka producer access"
   security_group_id        = aws_security_group.msk.id
   protocol                 = "tcp"
   from_port                = 9098
   to_port                  = 9098
   source_security_group_id = aws_security_group.kafka_producer[0].id
-}
-
-resource "aws_security_group_rule" "msk_kda_inbound" {
-  count                    = local.kda.to_create ? 1 : 0
-  type                     = "ingress"
-  description              = "Allow KDA access"
-  security_group_id        = aws_security_group.msk.id
-  protocol                 = "tcp"
-  from_port                = 9098
-  to_port                  = 9098
-  source_security_group_id = aws_security_group.kda_sg[0].id
 }
 
 resource "aws_cloudwatch_log_group" "msk_cluster_lg" {

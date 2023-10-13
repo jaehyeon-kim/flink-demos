@@ -4,16 +4,10 @@ variable "vpn_to_create" {
   default     = true
 }
 
-variable "vpn_to_use_spot" {
-  description = "Flag to indicate whether to use a spot instance for VPN"
+variable "producer_to_create" {
+  description = "Flag to indicate whether to create Lambda Kafka producer"
   type        = bool
   default     = false
-}
-
-variable "vpn_to_limit_vpn_ingress" {
-  description = "Flag to indicate whether to limit ingress from the current machine's IP address"
-  type        = bool
-  default     = true
 }
 
 locals {
@@ -33,8 +27,8 @@ locals {
 
   vpn = {
     to_create    = var.vpn_to_create
-    to_use_spot  = var.vpn_to_use_spot
-    ingress_cidr = var.vpn_to_limit_vpn_ingress ? "${data.http.local_ip_address.response_body}/32" : "0.0.0.0/0"
+    to_use_spot  = false
+    ingress_cidr = "${data.http.local_ip_address.response_body}/32"
     spot_override = [
       { instance_type : "t3.small" },
       { instance_type : "t3a.small" },
@@ -47,31 +41,24 @@ locals {
     ebs_volume_size            = 20
     log_retention_ms           = 604800000 # 7 days
     number_of_broker_nodes     = 2
-    num_partitions             = 2
+    num_partitions             = 5
     default_replication_factor = 2
   }
 
   producer = {
-    to_create         = false
-    src_path          = "src"
-    function_name     = "kafka_producer"
-    handler           = "app.lambda_function"
-    concurrency       = 5
-    timeout           = 90
-    memory_size       = 128
-    runtime           = "python3.8"
-    schedule_rate     = "rate(1 minute)"
-    to_enable_trigger = false
+    to_create     = var.producer_to_create
+    src_path      = "../producer"
+    function_name = "kafka_producer"
+    handler       = "app.lambda_function"
+    concurrency   = 5
+    timeout       = 90
+    memory_size   = 128
+    runtime       = "python3.8"
+    schedule_rate = "rate(1 minute)"
     environment = {
-      topic_name  = "orders"
+      topic_name  = "taxi-rides"
       max_run_sec = 60
     }
-  }
-
-  kda = {
-    to_create    = false
-    runtime_env  = "FLINK-1_15"
-    package_name = "kda-package.zip"
   }
 
   tags = {

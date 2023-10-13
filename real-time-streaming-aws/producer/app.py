@@ -43,8 +43,8 @@ class Taxi:
                 datetime.datetime.now() + datetime.timedelta(minutes=random.randint(30, 100))
             ).isoformat(timespec="milliseconds"),
             passenger_count=random.randint(1, 9),
-            pickup_longitude=pickup_lat,
-            pickup_latitude=pickup_lon,
+            pickup_longitude=pickup_lon,
+            pickup_latitude=pickup_lat,
             dropoff_longitude=dropoff_lon,
             dropoff_latitude=dropoff_lat,
             store_and_fwd_flag=["Y", "N"][random.randint(0, 1)],
@@ -124,7 +124,7 @@ def lambda_function(event, context):
     s = datetime.datetime.now()
     total_records = 0
     while True:
-        items = Taxi.create(10)
+        items = Taxi.create(100)
         producer.send(items)
         total_records += len(items)
         print(f"sent {len(items)} messages")
@@ -137,6 +137,6 @@ def lambda_function(event, context):
 
 if __name__ == "__main__":
     os.environ["BOOTSTRAP_SERVERS"] = "localhost:29092"
-    os.environ["TOPIC_NAME"] = "taxi"
+    os.environ["TOPIC_NAME"] = "taxi-rides"
     os.environ["MAX_RUN_SEC"] = "10"
     lambda_function({}, {})

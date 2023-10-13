@@ -15,7 +15,7 @@ module "eventbridge" {
   targets = {
     crons = [for i in range(local.producer.concurrency) : {
       name = "lambda-target-${i}"
-      arn  = module.kafka_producer[0].lambda_function_arn
+      arn  = module.kafka_producer.lambda_function_arn
     }]
   }
 
@@ -39,10 +39,10 @@ module "kafka_producer" {
   memory_size            = local.producer.memory_size
   source_path            = local.producer.src_path
   vpc_subnet_ids         = module.vpc.private_subnets
-  vpc_security_group_ids = [aws_security_group.kafka_producer[0].id]
+  vpc_security_group_ids = local.producer.to_create ? [aws_security_group.kafka_producer[0].id] : null
   attach_network_policy  = true
   attach_policies        = true
-  policies               = [aws_iam_policy.producer_msk_permission[0].arn]
+  policies               = local.producer.to_create ? [aws_iam_policy.kafka_producer[0].arn] : null
   number_of_policies     = 1
   environment_variables = {
     BOOTSTRAP_SERVERS = aws_msk_cluster.msk_data_cluster.bootstrap_brokers_sasl_iam
@@ -50,18 +50,22 @@ module "kafka_producer" {
     MAX_RUN_SEC       = local.producer.environment.max_run_sec
   }
 
+  depends_on = [
+    aws_msk_cluster.msk_data_cluster
+  ]
+
   tags = local.tags
 }
 
 resource "aws_lambda_function_event_invoke_config" "kafka_producer" {
   count = local.producer.to_create ? 1 : 0
 
-  function_name          = module.kafka_producer[0].lambda_function_name
+  function_name          = module.kafka_producer.lambda_function_name
   maximum_retry_attempts = 0
 }
 
 resource "aws_lambda_permission" "allow_eventbridge" {
-  count         = local.producer.to_create && local.producer.to_enable_trigger ? 1 : 0
+  count         = local.producer.to_create ? 1 : 0
   statement_id  = "InvokeLambdaFunction"
   action        = "lambda:InvokeFunction"
   function_name = local.producer.function_name

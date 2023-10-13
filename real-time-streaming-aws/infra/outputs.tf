@@ -57,6 +57,16 @@ output "vpn_autoscaling_group_name" {
   }
 }
 
+output "vpn_secret_id" {
+  description = "VPN secret ID"
+  value       = local.vpn.to_create ? aws_secretsmanager_secret.vpn_secrets[0].id : null
+}
+
+output "vpn_secret_version" {
+  description = "VPN secret version ID"
+  value       = local.vpn.to_create ? aws_secretsmanager_secret_version.vpn_secrets[0].version_id : null
+}
+
 # MSK
 output "msk_arn" {
   description = "Amazon Resource Name (ARN) of the MSK cluster"
@@ -68,8 +78,8 @@ output "msk_bootstrap_brokers_sasl_iam" {
   value       = aws_msk_cluster.msk_data_cluster.bootstrap_brokers_sasl_iam
 }
 
-# # KDA
-# output "kda_app_arn" {
-#   description = "Kinesis Application ARN"
-#   value       = local.kda.to_create ? aws_kinesisanalyticsv2_application.kda_app[0].arn : "NA"
-# }
+# Lambda Kafka producer
+output "kafka_lambda_arn" {
+  description = "Lambda Kafka producer ARN"
+  value       = local.producer.to_create ? module.kafka_producer.lambda_function_arn : null
+}
