@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  kpow:
+    image: factorhouse/kpow-ce:91.5.1
+    container_name: kpow
+    ports:
+      - "3000:3000"
+    networks:
+      - kafkanet
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
+      BOOTSTRAP: $BOOTSTRAP_SERVERS
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_MECHANISM: AWS_MSK_IAM
+      SASL_JAAS_CONFIG: software.amazon.msk.auth.iam.IAMLoginModule required;
+      SASL_CLIENT_CALLBACK_HANDLER_CLASS: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+    env_file: # https://kpow.io/get-started/#individual
+      - ./kpow.env
+
+networks:
+  kafkanet:
+    name: kafka-network

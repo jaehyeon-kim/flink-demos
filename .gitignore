@@ -12,6 +12,7 @@ kda-package*
 site_packages
 connectors
 airports.csv
+kpow.env
 
 ## sam
 .aws-sam*

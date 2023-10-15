@@ -1,0 +1,4 @@
+-r producer/requirements.txt
+black
+pytest
+pytest-cov
