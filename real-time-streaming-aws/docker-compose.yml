@@ -35,17 +35,17 @@ services:
       - kafka_0_data:/bitnami/kafka
     depends_on:
       - zookeeper
-  kafka-ui:
-    image: provectuslabs/kafka-ui:v0.7.1
-    container_name: kafka-ui
+  kpow:
+    image: factorhouse/kpow-ce:91.5.1
+    container_name: kpow
     ports:
-      - "8080:8080"
+      - "3000:3000"
     networks:
       - appnet
     environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-0:9092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      BOOTSTRAP: kafka-0:9092
+    env_file: # https://kpow.io/get-started/#individual
+      - ./kpow.env
     depends_on:
       - zookeeper
       - kafka-0
