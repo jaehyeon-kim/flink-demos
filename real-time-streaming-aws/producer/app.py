@@ -11,7 +11,7 @@ from kafka import KafkaProducer
 
 
 @dataclasses.dataclass
-class Taxi:
+class TaxiRide:
     id: str
     vendor_id: int
     pickup_date: str
@@ -32,8 +32,8 @@ class Taxi:
 
     @classmethod
     def auto(cls):
-        pickup_lon, pickup_lat = tuple(Taxi.get_latlon().split(","))
-        dropoff_lon, dropoff_lat = tuple(Taxi.get_latlon().split(","))
+        pickup_lon, pickup_lat = tuple(TaxiRide.get_latlon().split(","))
+        dropoff_lon, dropoff_lat = tuple(TaxiRide.get_latlon().split(","))
         distance, duration = random.randint(1, 7), random.randint(8, 10000)
         return cls(
             id=f"id{random.randint(1665586, 8888888)}",
@@ -56,7 +56,7 @@ class Taxi:
 
     @staticmethod
     def create(num: int):
-        return [Taxi.auto() for _ in range(num)]
+        return [TaxiRide.auto() for _ in range(num)]
 
     # fmt: off
     @staticmethod
@@ -104,7 +104,7 @@ class Producer:
             }
         return KafkaProducer(**kwargs)
 
-    def send(self, items: typing.List[Taxi]):
+    def send(self, items: typing.List[TaxiRide]):
         for item in items:
             self.producer.send(self.topic, key={"id": item.id}, value=item.asdict())
         self.producer.flush()
@@ -124,7 +124,7 @@ def lambda_function(event, context):
     s = datetime.datetime.now()
     total_records = 0
     while True:
-        items = Taxi.create(100)
+        items = TaxiRide.create(100)
         producer.send(items)
         total_records += len(items)
         print(f"sent {len(items)} messages")
