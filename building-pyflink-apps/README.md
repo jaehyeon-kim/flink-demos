@@ -10,7 +10,9 @@ Unlike the course, the source data is sent by a Kafka producer application becau
 
 ![](./images/featured.png)
 
-## Application Description
+## Course Contents
+
+Below describes course contents. ✅ and ☑️ indicate exercises and course materials respectively. The lesson 3 covers how to set up Kafka and Flink clusters using Docker Compose. The Kafka producer app is created as the lesson 5 exercise. The final versions of the flight importer job and usage statistics calculator can be found as exercises of the lesson 16 and 20 respectively.
 
 1. Apache Flink with Java - An Introduction
 2. Datastream Programming
@@ -48,8 +50,8 @@ Unlike the course, the source data is sent by a Kafka producer application becau
       - [s11_transformation.py](./src/s11_transformation.py)
       - [s11_process_function.py](./src/s11_process_function.py)
 12. ✅ Flink Data Transformations (Exercise)
-    - The source data is transformed into the flight data. Later data from _skyone_ and _sunset_ will be converted into it for merging them.
-    - The transformation is performed in a function called _define_workflow_ and tested. This function will be updated gradually.
+    - The source data is transformed into the flight data. Later data from _skyone_ and _sunset_ will be converted into this schema for merging them.
+    - The transformation is performed in a function called _define_workflow_ for being tested. This function will be updated gradually.
     - **See course content(s) below**
       - [s12_transformation.py](./src/s12_transformation.py)
       - [test_s12_transformation.py](./src/test_s12_transformation.py)
@@ -57,7 +59,7 @@ Unlike the course, the source data is sent by a Kafka producer application becau
 13. Flink Data Sinks
 14. ✅ Creating a Flink Data Sink (Exercise)
     - The converted data from _skyone_ will be pushed into a Kafka topic (_flightdata_).
-    - Note that the Python Data Classes cannot be serialized, records are converted into the named Row type before pushing them.
+    - Note that, as the Python Data Classes cannot be serialized, records are converted into the named Row type before being sent.
     - **See course content(s) below**
       - [s14_sink.py](./src/s14_sink.py)
 15. ☑️ Creating Branching Data Streams in Flink
@@ -65,14 +67,14 @@ Unlike the course, the source data is sent by a Kafka producer application becau
     - **See course content(s) below**
       - [s15_branching.py](./src/s15_branching.py)
 16. ✅ Merging Flink Data Streams (Exercise)
-    - Records from the _skyone_ and _sunset_ topics are merged and pushed into the _flightdata_ topic after being converted into the flight data.
+    - Records from the _skyone_ and _sunset_ topics are merged and sent into the _flightdata_ topic after being converted into the flight data.
     - **See course content(s) below**
       - [s16_merge.py](./src/s16_merge.py)
       - [test_s16_merge.py](./src/test_s16_merge.py)
 17. Windowing and Watermarks in Flink
 18. ✅ Aggregating Flink Data using Windowing (Exercise)
-    - Usage statistics (total flight duration and number of flights) are calculated by email address, and they are pushed into the _userstatistics_ topic.
-    - Note the transformation is _stateless_ in a sense that aggregation is entirely within the tumbling window over 1 minute.
+    - Usage statistics (total flight duration and number of flights) are calculated by email address, and they are sent into the _userstatistics_ topic.
+    - Note the transformation is _stateless_ in a sense that aggregation is entirely within a one-minute tumbling window.
     - **See course content(s) below**
       - [s18_aggregation.py](./src/s18_aggregation.py)
       - [test_s18_aggregation.py](./src/test_s18_aggregation.py)
@@ -84,9 +86,6 @@ Unlike the course, the source data is sent by a Kafka producer application becau
       - [s20_manage_state.py](./src/s20_manage_state.py)
       - [test_s20_manage_state.py](./src/test_s20_manage_state.py)
 21. Closing Remarks
-
-- ✅ - exercise
-- ☑️ - course material
 
 ## More Resources
 
