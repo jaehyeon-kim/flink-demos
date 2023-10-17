@@ -87,6 +87,39 @@ Below describes course contents. ✅ and ☑️ indicate exercises and course ma
       - [test_s20_manage_state.py](./src/test_s20_manage_state.py)
 21. Closing Remarks
 
+## Start Applications
+
+```bash
+#### build docker image for Pyflink
+docker build -t=building-pyflink-apps:1.17.1 .
+
+#### create kafka and flink clusters and kafka-ui
+docker-compose up -d
+
+#### start kafka producer in one terminal
+python -m venv venv
+source venv/bin/activate
+# upgrade pip (optional)
+pip install pip --upgrade
+# install required packages
+pip install -r requirements-dev.txt
+## start with --create flag to create topics before sending messages
+python src/s05_data_gen.py --create
+
+#### submit pyflink apps in another terminal
+## flight importer
+docker exec jobmanager /opt/flink/bin/flink run \
+    --python /tmp/src/s16_merge.py \
+    --pyFiles file:///tmp/src/models.py,file:///tmp/src/utils.py \
+    -d
+
+## usage calculator
+docker exec jobmanager /opt/flink/bin/flink run \
+    --python /tmp/src/s20_manage_state.py \
+    --pyFiles file:///tmp/src/models.py,file:///tmp/src/utils.py \
+    -d
+```
+
 ## More Resources
 
 - [Intro to the Python DataStream API](https://nightlies.apache.org/flink/flink-docs-release-1.17/docs/dev/python/datastream/intro_to_datastream_api/)
