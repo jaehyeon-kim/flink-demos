@@ -13,6 +13,7 @@ site_packages
 connectors
 airports.csv
 kpow.env
+jars
 
 ## sam
 .aws-sam*

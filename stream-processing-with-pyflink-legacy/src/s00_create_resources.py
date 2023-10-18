@@ -3,7 +3,9 @@ import csv
 import io
 import datetime
 import dataclasses
+import time
 import json
+import random
 import typing
 import logging
 import pandas as pd
@@ -37,18 +39,18 @@ class Transaction:
         return dataclasses.asdict(self)
 
     @classmethod
-    def init(cls, row: typing.Dict[str, str]):
+    def init(cls, row: typing.Dict[str, str], randomize: bool = False):
+        event_date = datetime.datetime.now()
+        if random.random() < 0.3:
+            event_date = event_date + datetime.timedelta(seconds=random.randrange(-180, 0))
         date_part, time_part = tuple(row["fulldatewithtime"].split("T"))
         data_date = (pd.to_datetime(date_part) + pd.to_timedelta(time_part)).to_pydatetime()
         return cls(
             row["trans_id"],
             row["account_id"],
             row["customer_id"],
-            int(
-                (datetime.datetime.now() - datetime.datetime.fromtimestamp(0)).total_seconds()
-                * 1000
-            ),
-            datetime.datetime.now().isoformat(sep=" ", timespec="milliseconds"),
+            int((event_date - datetime.datetime.fromtimestamp(0)).total_seconds() * 1000),
+            event_date.isoformat(sep=" ", timespec="milliseconds"),
             row["type"],
             row["operation"],
             float(row["amount"]),
@@ -253,45 +255,49 @@ class KafkaClient:
 
 
 if __name__ == "__main__":
-    client = KafkaClient("localhost:19092")
+    client = KafkaClient(os.getenv("BOOTSTRAP_SERVERS", "localhost:19092"))
 
-    ## create topics
-    topics = [
-        NewTopic(name="transactions", num_partitions=5, replication_factor=1),
-        NewTopic(name="transactions.debits", num_partitions=5, replication_factor=1),
-        NewTopic(name="transactions.credits", num_partitions=5, replication_factor=1),
-        NewTopic(name="small-transactions", num_partitions=1, replication_factor=1),
-        NewTopic(
-            name="customers",
-            num_partitions=1,
-            replication_factor=1,
-            topic_configs={"cleanup.policy": "compact", "retention.ms": 600000},
-        ),
-        NewTopic(
-            name="accounts",
-            num_partitions=1,
-            replication_factor=1,
-            topic_configs={"cleanup.policy": "compact", "retention.ms": 600000},
-        ),
-    ]
+    DATA_PATH = os.getenv("DATA_PATH", "../.external/data")
+    if int(os.getenv("TO_CREATE_TOPICS", "0")) == 1:
+        ## create topics
+        topics = [
+            NewTopic(name="transactions", num_partitions=5, replication_factor=1),
+            NewTopic(name="transactions.debits", num_partitions=5, replication_factor=1),
+            NewTopic(name="transactions.credits", num_partitions=5, replication_factor=1),
+            NewTopic(name="small-transactions", num_partitions=1, replication_factor=1),
+            NewTopic(
+                name="customers",
+                num_partitions=1,
+                replication_factor=1,
+                topic_configs={"cleanup.policy": "compact", "retention.ms": 600000},
+            ),
+            NewTopic(
+                name="accounts",
+                num_partitions=1,
+                replication_factor=1,
+                topic_configs={"cleanup.policy": "compact", "retention.ms": 600000},
+            ),
+        ]
+        client.create_topics(topics, to_recreate=True)
 
-    client.create_topics(topics, to_recreate=True)
-
-    ## send messages
-    DATA_PATH = os.getenv("DATA_PATH", ".external/data")
-    client.send(
-        Account.read(file_path=os.path.join(DATA_PATH, "accounts.csv")),
-        topic_info=("accounts", "accountId"),
-    )
-    client.send(
-        Customer.read(file_path=os.path.join(DATA_PATH, "customers.csv")),
-        topic_info=("customers", "customerId"),
-    )
-    client.send(
-        Transaction.read(file_path=os.path.join(DATA_PATH, "transactions.csv")),
-        topic_info=("transactions", "transactionId"),
-    )
-    client.send(
-        Transaction.read(file_path=os.path.join(DATA_PATH, "transactions-small.csv")),
-        topic_info=("small-transactions", "transactionId"),
-    )
+    if int(os.getenv("TO_INGEST_NON_TRANSACTIONS", "0")) == 1:
+        ## send messages
+        client.send(
+            Account.read(file_path=os.path.join(DATA_PATH, "accounts.csv")),
+            topic_info=("accounts", "accountId"),
+        )
+        client.send(
+            Customer.read(file_path=os.path.join(DATA_PATH, "customers.csv")),
+            topic_info=("customers", "customerId"),
+        )
+        client.send(
+            Transaction.read(file_path=os.path.join(DATA_PATH, "transactions-small.csv")),
+            topic_info=("small-transactions", "transactionId"),
+        )
+    transactions = Transaction.read(file_path=os.path.join(DATA_PATH, "transactions-sample.csv"))
+    while True:
+        client.send(
+            random.sample(transactions, 5),
+            topic_info=("transactions", "transactionId"),
+        )
+        time.sleep(1)
