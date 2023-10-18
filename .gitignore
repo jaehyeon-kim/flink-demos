@@ -4,8 +4,6 @@
 .deep-dive
 *.pem
 *-demo-data
-flink-sql-connector-kafka-*.jar
-flink-json-*.jar
 pyflink-udemy/revenue.csv
 .external
 kda-package*
@@ -13,7 +11,8 @@ site_packages
 connectors
 airports.csv
 kpow.env
-jars
+*.jar
+logs/flink
 
 ## sam
 .aws-sam*

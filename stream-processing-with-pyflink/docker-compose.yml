@@ -1,0 +1,210 @@
+version: "3.5"
+
+services:
+  jobmanager:
+    image: stream-processing-with-pyflink:1.17.1
+    command: jobmanager
+    container_name: jobmanager
+    ports:
+      - "8081:8081"
+    networks:
+      - appnet
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=docker
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+        rest.flamegraph.enabled: true
+        web.backpressure.refresh-interval: 10000
+    volumes:
+      - ./logs/flink/jm:/opt/flink/temp
+      - ./src:/tmp/src
+  taskmanager-0:
+    image: stream-processing-with-pyflink:1.17.1
+    command: taskmanager
+    container_name: taskmanager-0
+    networks:
+      - appnet
+    volumes:
+      - ./logs/flink/tm0:/opt/flink/temp
+      - ./src:/tmp/src
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=docker
+      - |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 5
+        metrics.reporters: prom
+        metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+        metrics.reporter.prom.port: 9249
+        state.backend.rocksdb.metrics.actual-delayed-write-rate: true
+        state.backend.rocksdb.metrics.background-errors: true
+        state.backend.rocksdb.metrics.block-cache-capacity: true
+        state.backend.rocksdb.metrics.estimate-num-keys: true
+        state.backend.rocksdb.metrics.estimate-live-data-size: true
+        state.backend.rocksdb.metrics.estimate-pending-compaction-bytes: true
+        state.backend.rocksdb.metrics.num-running-compactions: true
+        state.backend.rocksdb.metrics.compaction-pending: true
+        state.backend.rocksdb.metrics.is-write-stopped: true
+        state.backend.rocksdb.metrics.num-running-flushes: true
+        state.backend.rocksdb.metrics.mem-table-flush-pending: true
+        state.backend.rocksdb.metrics.block-cache-usage: true
+        state.backend.rocksdb.metrics.size-all-mem-tables: true
+        state.backend.rocksdb.metrics.num-live-versions: true
+        state.backend.rocksdb.metrics.block-cache-pinned-usage: true
+        state.backend.rocksdb.metrics.estimate-table-readers-mem: true
+        state.backend.rocksdb.metrics.num-snapshots: true
+        state.backend.rocksdb.metrics.num-entries-active-mem-table: true
+        state.backend.rocksdb.metrics.num-deletes-imm-mem-tables: true
+    depends_on:
+      - jobmanager
+  taskmanager-1:
+    image: stream-processing-with-pyflink:1.17.1
+    command: taskmanager
+    container_name: taskmanager-1
+    networks:
+      - appnet
+    volumes:
+      - ./logs/flink/tm1:/opt/flink/temp
+      - ./src:/tmp/src
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=docker
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 5
+        metrics.reporters: prom
+        metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+        metrics.reporter.prom.port: 9249
+        state.backend.rocksdb.metrics.actual-delayed-write-rate: true
+        state.backend.rocksdb.metrics.background-errors: true
+        state.backend.rocksdb.metrics.block-cache-capacity: true
+        state.backend.rocksdb.metrics.estimate-num-keys: true
+        state.backend.rocksdb.metrics.estimate-live-data-size: true
+        state.backend.rocksdb.metrics.estimate-pending-compaction-bytes: true
+        state.backend.rocksdb.metrics.num-running-compactions: true
+        state.backend.rocksdb.metrics.compaction-pending: true
+        state.backend.rocksdb.metrics.is-write-stopped: true
+        state.backend.rocksdb.metrics.num-running-flushes: true
+        state.backend.rocksdb.metrics.mem-table-flush-pending: true
+        state.backend.rocksdb.metrics.block-cache-usage: true
+        state.backend.rocksdb.metrics.size-all-mem-tables: true
+        state.backend.rocksdb.metrics.num-live-versions: true
+        state.backend.rocksdb.metrics.block-cache-pinned-usage: true
+        state.backend.rocksdb.metrics.estimate-table-readers-mem: true
+        state.backend.rocksdb.metrics.num-snapshots: true
+        state.backend.rocksdb.metrics.num-entries-active-mem-table: true
+        state.backend.rocksdb.metrics.num-deletes-imm-mem-tables: true
+    depends_on:
+      - jobmanager
+  zookeeper:
+    image: bitnami/zookeeper:3.5
+    container_name: zookeeper
+    ports:
+      - "2181"
+    networks:
+      - appnet
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    volumes:
+      - zookeeper_data:/bitnami/zookeeper
+  kafka-0:
+    image: bitnami/kafka:2.8.1
+    container_name: kafka-0
+    expose:
+      - 9092
+    ports:
+      - "29092:29092"
+    networks:
+      - appnet
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_BROKER_ID=0
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9092,EXTERNAL://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_NUM_PARTITIONS=5
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
+    volumes:
+      - kafka_0_data:/bitnami/kafka
+    depends_on:
+      - zookeeper
+  kafka-ui:
+    image: provectuslabs/kafka-ui:master
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    networks:
+      - appnet
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-0:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      - zookeeper
+      - kafka-0
+  # postgres:
+  #   image: postgres:16
+  #   container_name: postgres
+  #   restart: always
+  #   networks:
+  #     - appnet
+  #   volumes:
+  #     - ./sql:/docker-entrypoint-initdb.d
+  #     - ./data:/tmp
+  #   environment:
+  #     - POSTGRES_DB=main
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   ports:
+  #     - "5432:5432"
+  # prometheus:
+  #   image: prom/prometheus:v2.47.0
+  #   container_name: prometheus
+  #   command:
+  #     - "--config.file=/etc/prometheus/config.yaml"
+  #   ports:
+  #     - "9090:9090"
+  #   networks:
+  #     - appnet
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  #     #- ./prom_data:/prometheus
+  # grafana:
+  #   image: grafana/grafana:10.1.2
+  #   container_name: grafana
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - appnet
+  #   restart: unless-stopped
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=grafana
+  #     - GF_SECURITY_ADMIN_PASSWORD=grafana
+  #   volumes:
+  #     - ./grafana/provisioning:/etc/grafana/provisioning
+  #     - ./grafana/dashboards:/var/lib/grafana/dashboards
+
+networks:
+  appnet:
+    name: app-network
+
+volumes:
+  zookeeper_data:
+    driver: local
+    name: zookeeper_data
+  kafka_0_data:
+    driver: local
+    name: kafka_0_data
+  prometheus_data:
+    driver: local
+    name: prometheus_data
