@@ -38,30 +38,14 @@ services:
       - BOOTSTRAP_SERVERS=kafka-0:9092
       - RUNTIME_ENV=docker
       - |
+        FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 5
-        metrics.reporters: prom
-        metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
-        metrics.reporter.prom.port: 9249
-        state.backend.rocksdb.metrics.actual-delayed-write-rate: true
-        state.backend.rocksdb.metrics.background-errors: true
-        state.backend.rocksdb.metrics.block-cache-capacity: true
-        state.backend.rocksdb.metrics.estimate-num-keys: true
-        state.backend.rocksdb.metrics.estimate-live-data-size: true
-        state.backend.rocksdb.metrics.estimate-pending-compaction-bytes: true
-        state.backend.rocksdb.metrics.num-running-compactions: true
-        state.backend.rocksdb.metrics.compaction-pending: true
-        state.backend.rocksdb.metrics.is-write-stopped: true
-        state.backend.rocksdb.metrics.num-running-flushes: true
-        state.backend.rocksdb.metrics.mem-table-flush-pending: true
-        state.backend.rocksdb.metrics.block-cache-usage: true
-        state.backend.rocksdb.metrics.size-all-mem-tables: true
-        state.backend.rocksdb.metrics.num-live-versions: true
-        state.backend.rocksdb.metrics.block-cache-pinned-usage: true
-        state.backend.rocksdb.metrics.estimate-table-readers-mem: true
-        state.backend.rocksdb.metrics.num-snapshots: true
-        state.backend.rocksdb.metrics.num-entries-active-mem-table: true
-        state.backend.rocksdb.metrics.num-deletes-imm-mem-tables: true
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
     depends_on:
       - jobmanager
   taskmanager-1:
@@ -80,28 +64,11 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 5
-        metrics.reporters: prom
-        metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
-        metrics.reporter.prom.port: 9249
-        state.backend.rocksdb.metrics.actual-delayed-write-rate: true
-        state.backend.rocksdb.metrics.background-errors: true
-        state.backend.rocksdb.metrics.block-cache-capacity: true
-        state.backend.rocksdb.metrics.estimate-num-keys: true
-        state.backend.rocksdb.metrics.estimate-live-data-size: true
-        state.backend.rocksdb.metrics.estimate-pending-compaction-bytes: true
-        state.backend.rocksdb.metrics.num-running-compactions: true
-        state.backend.rocksdb.metrics.compaction-pending: true
-        state.backend.rocksdb.metrics.is-write-stopped: true
-        state.backend.rocksdb.metrics.num-running-flushes: true
-        state.backend.rocksdb.metrics.mem-table-flush-pending: true
-        state.backend.rocksdb.metrics.block-cache-usage: true
-        state.backend.rocksdb.metrics.size-all-mem-tables: true
-        state.backend.rocksdb.metrics.num-live-versions: true
-        state.backend.rocksdb.metrics.block-cache-pinned-usage: true
-        state.backend.rocksdb.metrics.estimate-table-readers-mem: true
-        state.backend.rocksdb.metrics.num-snapshots: true
-        state.backend.rocksdb.metrics.num-entries-active-mem-table: true
-        state.backend.rocksdb.metrics.num-deletes-imm-mem-tables: true
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
     depends_on:
       - jobmanager
   zookeeper:
@@ -132,8 +99,8 @@ services:
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,EXTERNAL://:29092
       - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://localhost:29092
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-      - KAFKA_CFG_NUM_PARTITIONS=5
-      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
+      # - KAFKA_CFG_NUM_PARTITIONS=5
+      # - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
     volumes:
       - kafka_0_data:/bitnami/kafka
     depends_on:
@@ -159,7 +126,7 @@ services:
   #   networks:
   #     - appnet
   #   volumes:
-  #     - ./sql:/docker-entrypoint-initdb.d
+  #     - ./postgres:/docker-entrypoint-initdb.d
   #     - ./data:/tmp
   #   environment:
   #     - POSTGRES_DB=main

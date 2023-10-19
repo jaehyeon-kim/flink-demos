@@ -3,7 +3,7 @@ import argparse
 import typing
 import logging
 
-from kafka import KafkaAdminClient, KafkaProducer
+from kafka import KafkaAdminClient
 from kafka.admin import NewTopic
 from kafka.errors import KafkaError, UnknownTopicOrPartitionError
 
@@ -60,20 +60,20 @@ if __name__ == "__main__":
 
     topics = [
         NewTopic(name="transactions", num_partitions=5, replication_factor=1),
-        NewTopic(name="transactions.debits", num_partitions=5, replication_factor=1),
-        NewTopic(name="transactions.credits", num_partitions=5, replication_factor=1),
+        # NewTopic(name="transactions.debits", num_partitions=5, replication_factor=1),
+        # NewTopic(name="transactions.credits", num_partitions=5, replication_factor=1),
         NewTopic(
             name="customers",
             num_partitions=1,
             replication_factor=1,
-            topic_configs={"cleanup.policy": "compact", "retention.ms": 600000},
+            topic_configs={"cleanup.policy": "compact,delete", "retention.ms": 600000},
         ),
-        # NewTopic(
-        #     name="accounts",
-        #     num_partitions=1,
-        #     replication_factor=1,
-        #     topic_configs={"cleanup.policy": "compact", "retention.ms": 600000},
-        # ),
+        NewTopic(
+            name="accounts",
+            num_partitions=1,
+            replication_factor=1,
+            topic_configs={"cleanup.policy": "compact,delete", "retention.ms": 600000},
+        ),
     ]
 
     if args.delete:
