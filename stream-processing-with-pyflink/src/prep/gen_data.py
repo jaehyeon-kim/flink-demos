@@ -3,16 +3,16 @@ import logging
 
 from pyflink.table import EnvironmentSettings, TableEnvironment
 
-from tbl_src import Customer, Account, assign_operation
+from tbl_src import Transaction, Customer, Account, assign_operation
 
 if __name__ == "__main__":
     """
     ## local execution
-    python src/prep/gen_cust_acc.py
+    python src/prep/gen_data.py
 
     ## cluster execution
     docker exec jobmanager /opt/flink/bin/flink run \
-        --python /tmp/src/prep/gen_cust_acc.py \
+        --python /tmp/src/prep/gen_data.py \
         --pyFiles file:///tmp/src/prep/tbl_src.py \
         -d
     """
@@ -42,8 +42,30 @@ if __name__ == "__main__":
 
     statement_set = tbl_env.create_statement_set()
 
-    Customer.generate(tbl_env, statement_set, BOOTSTRAP_SERVERS, print_only=False, row_per_sec=1)
-    Account.generate(tbl_env, statement_set, BOOTSTRAP_SERVERS, print_only=False, row_per_sec=1)
+    Customer.generate(
+        tbl_env,
+        statement_set,
+        BOOTSTRAP_SERVERS,
+        sink_parallelism=1,
+        print_only=False,
+        row_per_sec=1,
+    )
+    Account.generate(
+        tbl_env,
+        statement_set,
+        BOOTSTRAP_SERVERS,
+        sink_parallelism=1,
+        print_only=False,
+        row_per_sec=1,
+    )
+    Transaction.generate(
+        tbl_env,
+        statement_set,
+        BOOTSTRAP_SERVERS,
+        sink_parallelism=1,
+        print_only=False,
+        row_per_sec=3,
+    )
 
     if RUNTIME_ENV == "local":
         statement_set.execute().wait()

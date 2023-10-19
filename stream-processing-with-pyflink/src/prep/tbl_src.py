@@ -20,12 +20,17 @@ class Transaction:
         tbl_env: TableEnvironment,
         statement_set: StatementSet,
         bootstrap_servers: str,
+        sink_parallelism: int,
         print_only: bool = False,
         row_per_sec: int = 1,
     ):
         tbl_env.execute_sql(Transaction.source_ddl(rows_per_sec=row_per_sec))
         tbl_env.execute_sql(
-            Transaction.sink_ddl(bootrap_servers=bootstrap_servers, print_only=print_only)
+            Transaction.sink_ddl(
+                bootrap_servers=bootstrap_servers,
+                sink_parallelism=sink_parallelism,
+                print_only=print_only,
+            )
         )
         statement_set.add_insert_sql(Transaction.insert_qry())
 
@@ -55,7 +60,7 @@ class Transaction:
         return stmt
 
     @staticmethod
-    def sink_ddl(bootrap_servers: str, print_only: bool = False):
+    def sink_ddl(bootrap_servers: str, sink_parallelism: int = 2, print_only: bool = False):
         if print_only:
             opts = {"connector": "print"}
         else:
@@ -67,9 +72,10 @@ class Transaction:
                 "key.format": "json",
                 "key.fields": "transaction_id",
                 "value.format": "json",
+                "sink.parallelism": sink_parallelism,
             }
         stmt = f"""
-        CREATE TABLE transactions_sink (
+        CREATE TABLE transactions (
             `transaction_id`    STRING,
             `account_id`        STRING,
             `customer_id`       STRING,
@@ -88,7 +94,7 @@ class Transaction:
     @staticmethod
     def insert_qry():
         return """
-        INSERT INTO transactions_sink
+        INSERT INTO transactions
         SELECT
             transaction_id,
             'A' || LPAD(CAST(account_number AS STRING), 8, '0') AS account_id,
@@ -108,12 +114,17 @@ class Customer:
         tbl_env: TableEnvironment,
         statement_set: StatementSet,
         bootstrap_servers: str,
+        sink_parallelism: int,
         print_only: bool = False,
         row_per_sec: int = 1,
     ):
         tbl_env.execute_sql(Customer.source_ddl(rows_per_sec=row_per_sec))
         tbl_env.execute_sql(
-            Customer.sink_ddl(bootrap_servers=bootstrap_servers, print_only=print_only)
+            Customer.sink_ddl(
+                bootrap_servers=bootstrap_servers,
+                sink_parallelism=sink_parallelism,
+                print_only=print_only,
+            )
         )
         statement_set.add_insert_sql(Customer.insert_qry())
 
@@ -143,7 +154,7 @@ class Customer:
         return stmt
 
     @staticmethod
-    def sink_ddl(bootrap_servers: str, print_only: bool = False):
+    def sink_ddl(bootrap_servers: str, sink_parallelism: int = 1, print_only: bool = False):
         if print_only:
             opts = {"connector": "print"}
         else:
@@ -155,6 +166,7 @@ class Customer:
                 "key.format": "json",
                 "key.fields": "customer_id",
                 "value.format": "json",
+                "sink.parallelism": sink_parallelism,
             }
         stmt = f"""
         CREATE TABLE customers (
@@ -196,12 +208,17 @@ class Account:
         tbl_env: TableEnvironment,
         statement_set: StatementSet,
         bootstrap_servers: str,
+        sink_parallelism: int,
         print_only: bool = False,
         row_per_sec: int = 1,
     ):
         tbl_env.execute_sql(Account.source_ddl(rows_per_sec=row_per_sec))
         tbl_env.execute_sql(
-            Account.sink_ddl(bootrap_servers=bootstrap_servers, print_only=print_only)
+            Account.sink_ddl(
+                bootrap_servers=bootstrap_servers,
+                sink_parallelism=sink_parallelism,
+                print_only=print_only,
+            )
         )
         statement_set.add_insert_sql(Account.insert_qry())
 
@@ -227,7 +244,7 @@ class Account:
         return stmt
 
     @staticmethod
-    def sink_ddl(bootrap_servers: str, print_only: bool = False):
+    def sink_ddl(bootrap_servers: str, sink_parallelism: int = 1, print_only: bool = False):
         if print_only:
             opts = {"connector": "print"}
         else:
@@ -239,9 +256,10 @@ class Account:
                 "key.format": "json",
                 "key.fields": "account_id",
                 "value.format": "json",
+                "sink.parallelism": sink_parallelism,
             }
         stmt = f"""
-        CREATE TABLE accounts_sink (
+        CREATE TABLE accounts (
             `account_id`         STRING,
             `district_id`        STRING,
             `frequency`          STRING,
@@ -257,7 +275,7 @@ class Account:
     @staticmethod
     def insert_qry():
         return """
-        INSERT INTO accounts_sink
+        INSERT INTO accounts
         SELECT
             'A' || LPAD(CAST(account_number AS STRING), 8, '0') AS account_id,
             CAST(district_number AS STRING) AS district_id,
