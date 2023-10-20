@@ -30,7 +30,7 @@ if __name__ == "__main__":
     tbl_env.create_temporary_system_function("assign_operation", assign_operation)
     if RUNTIME_ENV != "docker":
         CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-        jar_files = ["flink-faker-0.5.3.jar", "flink-sql-connector-kafka-1.17.0.jar"]
+        jar_files = ["flink-faker-0.5.3.jar", "flink-sql-connector-kafka-1.17.1.jar"]
         jar_paths = ";".join(
             [
                 f"file://{os.path.join(os.path.dirname(CURRENT_DIR), 'jars', name)}"

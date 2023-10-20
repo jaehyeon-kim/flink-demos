@@ -1,9 +1,13 @@
 import datetime
 import dataclasses
-import re
+import json
 
 from pyflink.common import Row
 from pyflink.common.typeinfo import Types
+
+
+def str_to_ts(s: str):
+    return datetime.datetime.fromisoformat(s[:23].ljust(23, "0"))
 
 
 @dataclasses.dataclass
@@ -18,13 +22,28 @@ class Transaction:
     amount: int
 
     @classmethod
+    def from_str(cls, s: str):
+        d = json.loads(s)
+        kwargs = {
+            "transaction_id": d["transaction_id"],
+            "account_id": d["account_id"],
+            "customer_id": d["customer_id"],
+            "event_time": d["event_time"],
+            "event_timestamp": str_to_ts(d["event_timestamp"]),
+            "type": d["type"],
+            "operation": d["operation"],
+            "amount": d["amount"],
+        }
+        return cls(**kwargs)
+
+    @classmethod
     def from_row(cls, row: Row):
         kwargs = {
             "transaction_id": row.transaction_id,
             "account_id": row.account_id,
             "customer_id": row.customer_id,
-            "event_time": row.event_time,
-            "event_timestamp": row.event_timestamp,
+            "event_time": int(row.event_time),
+            "event_timestamp": str_to_ts(row.event_timestamp),
             "type": row.type,
             "operation": row.operation,
             "amount": row.amount,
@@ -38,8 +57,8 @@ class Transaction:
                 "transaction_id",
                 "account_id",
                 "customer_id",
-                "event_time_int",
                 "event_time",
+                "event_timestamp",
                 "type",
                 "operation",
                 "amount",
@@ -48,8 +67,8 @@ class Transaction:
                 Types.STRING(),
                 Types.STRING(),
                 Types.STRING(),
-                Types.BIG_INT(),
-                Types.SQL_TIMESTAMP(),
+                Types.STRING(),  # Types.BIG_INT() not working
+                Types.STRING(),
                 Types.STRING(),
                 Types.STRING(),
                 Types.INT(),
@@ -103,7 +122,7 @@ class Customer:
                 Types.STRING(),
                 Types.STRING(),
                 Types.BIG_INT(),
-                Types.SQL_TIMESTAMP(),
+                Types.STRING(),
             ],
         )
 
@@ -142,6 +161,6 @@ class Account:
                 Types.STRING(),
                 Types.STRING(),
                 Types.BIG_INT(),
-                Types.SQL_TIMESTAMP(),
+                Types.STRING(),
             ],
         )
