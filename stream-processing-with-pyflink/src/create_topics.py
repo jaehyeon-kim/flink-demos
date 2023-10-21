@@ -58,23 +58,7 @@ if __name__ == "__main__":
 
     client = KafkaClient(os.getenv("BOOTSTRAP_SERVERS", "localhost:29092"))
 
-    topics = [
-        NewTopic(name="transactions", num_partitions=5, replication_factor=1),
-        # NewTopic(name="transactions.debits", num_partitions=5, replication_factor=1),
-        # NewTopic(name="transactions.credits", num_partitions=5, replication_factor=1),
-        NewTopic(
-            name="customers",
-            num_partitions=1,
-            replication_factor=1,
-            topic_configs={"cleanup.policy": "compact,delete", "retention.ms": 600000},
-        ),
-        NewTopic(
-            name="accounts",
-            num_partitions=1,
-            replication_factor=1,
-            topic_configs={"cleanup.policy": "compact,delete", "retention.ms": 600000},
-        ),
-    ]
+    topics = [NewTopic(name="sensor-reading", num_partitions=3, replication_factor=1)]
 
     if args.delete:
         client.delete_topics(topics)
