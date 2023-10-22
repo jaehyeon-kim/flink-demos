@@ -19,7 +19,7 @@ class SensorReading:
                 assert id == next_id
             id = next_id
             count += 1
-            temperature += e[1] / 100 * 20
+            temperature += 65 + (e[1] / 100 * 20)
         return id, count, temperature
 
     @staticmethod
