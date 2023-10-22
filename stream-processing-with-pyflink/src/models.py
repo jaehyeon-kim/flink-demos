@@ -8,6 +8,7 @@ from pyflink.common.typeinfo import Types
 class SensorReading:
     id: str
     timestamp: int
+    num_records: int
     temperature: float
 
     @staticmethod
@@ -32,6 +33,6 @@ class SensorReading:
     @staticmethod
     def get_value_type():
         return Types.ROW_NAMED(
-            field_names=["id", "timestamp", "temperature"],
-            field_types=[Types.STRING(), Types.LONG(), Types.DOUBLE()],
+            field_names=["id", "timestamp", "num_records", "temperature"],
+            field_types=[Types.STRING(), Types.LONG(), Types.INT(), Types.DOUBLE()],
         )

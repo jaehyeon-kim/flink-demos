@@ -4,7 +4,7 @@ from typing import Iterable, Tuple
 
 from pyflink.common import Row, WatermarkStrategy
 from pyflink.common.typeinfo import Types
-from pyflink.common.watermark_strategy import TimestampAssigner
+from pyflink.common.watermark_strategy import TimestampAssigner, Duration
 from pyflink.datastream import DataStream
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.window import TumblingEventTimeWindows, Time
@@ -31,6 +31,7 @@ class AggreteProcessWindowFunction(ProcessWindowFunction):
         yield Row(
             id=id,
             timestamp=int(context.window().end),
+            num_records=count,
             temperature=round(temperature / count, 2),
         )
 
@@ -47,11 +48,11 @@ def define_workflow(source_stream: DataStream):
 if __name__ == "__main__":
     """
     ## local execution
-    python src/c01_sensor_reading.py
+    python src/c01.py
 
     ## cluster execution
     docker exec jobmanager /opt/flink/bin/flink run \
-        --python /tmp/src/c01_sensor_reading.py \
+        --python /tmp/src/c01.py \
         --pyFiles file:///tmp/src/models.py \
         -d
     """
@@ -90,9 +91,9 @@ if __name__ == "__main__":
     source_stream = t_env.to_append_stream(
         t_env.from_path("sensor_source"), Types.TUPLE([Types.INT(), Types.INT()])
     ).assign_timestamps_and_watermarks(
-        WatermarkStrategy.for_monotonous_timestamps().with_timestamp_assigner(
-            DefaultTimestampAssigner()
-        )
+        WatermarkStrategy.for_bounded_out_of_orderness(
+            Duration.of_seconds(5)
+        ).with_timestamp_assigner(DefaultTimestampAssigner())
     )
 
     sensor_sink = (
@@ -117,7 +118,7 @@ if __name__ == "__main__":
         .build()
     )
 
-    # define_workflow(source_stream).print()  # it works!
+    # define_workflow(source_stream).print()
     define_workflow(source_stream).sink_to(sensor_sink).name("sensor_sink").uid("sensor_sink")
 
     env.execute()
