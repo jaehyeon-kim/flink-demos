@@ -1,9 +1,14 @@
 import os
+import datetime
+from typing import Iterable, Tuple
 
-from pyflink.common import WatermarkStrategy
+from pyflink.common import Row, WatermarkStrategy
 from pyflink.common.typeinfo import Types
 from pyflink.common.watermark_strategy import TimestampAssigner, Duration
+from pyflink.datastream import DataStream
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
+from pyflink.datastream.window import TumblingEventTimeWindows, Time
+from pyflink.datastream.functions import ProcessWindowFunction
 from pyflink.table import StreamTableEnvironment
 from pyflink.datastream.connectors.kafka import (
     KafkaSink,
@@ -13,7 +18,32 @@ from pyflink.datastream.connectors.kafka import (
 from pyflink.datastream.formats.json import JsonRowSerializationSchema
 
 from model import SensorReading
-from workflow import define_workflow
+
+
+class AggreteProcessWindowFunction(ProcessWindowFunction):
+    def process(
+        self,
+        key: int,
+        context: ProcessWindowFunction.Context,
+        elements: Iterable[Tuple[int, datetime.datetime]],
+    ) -> Iterable[Row]:
+        id, count, temperature = SensorReading.process_elements(elements)
+        yield Row(
+            id=id,
+            timestamp=int(context.window().end),
+            num_records=count,
+            temperature=round(temperature / count, 2),
+        )
+
+
+def define_workflow(source_stream: DataStream):
+    sensor_stream = (
+        source_stream.key_by(lambda e: e[0])
+        .window(TumblingEventTimeWindows.of(Time.seconds(1)))
+        .process(AggreteProcessWindowFunction(), output_type=SensorReading.get_value_type())
+    )
+    return sensor_stream
+
 
 if __name__ == "__main__":
     """
@@ -89,7 +119,7 @@ if __name__ == "__main__":
         .build()
     )
 
-    # define_workflow(source_stream).print()
-    define_workflow(source_stream).sink_to(sensor_sink).name("sensor_sink").uid("sensor_sink")
+    define_workflow(source_stream).print()
+    # define_workflow(source_stream).sink_to(sensor_sink).name("sensor_sink").uid("sensor_sink")
 
-    env.execute()
+    env.execute("Compute average sensor temperature")
