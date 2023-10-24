@@ -28,7 +28,7 @@ class AggreteProcessWindowFunction(ProcessWindowFunction):
         elements: Iterable[Tuple[int, int, datetime.datetime]],
     ) -> Iterable[Row]:
         id, count, temperature = SensorReading.process_elements(elements)
-        yield Row(
+        yield SensorReading(
             id=id,
             timestamp=int(context.window().end),
             num_records=count,
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     ## cluster execution
     docker exec jobmanager /opt/flink/bin/flink run \
         --python /tmp/src/chapter1/app.py \
-        --pyFiles file:///tmp/src/chapter1/model.py,file:///tmp/src/chapter1/workflow.py \
+        --pyFiles file:///tmp/src/chapter1/model.py \
         -d
     """
 

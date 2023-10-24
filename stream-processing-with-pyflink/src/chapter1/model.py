@@ -1,16 +1,18 @@
 import datetime
-import dataclasses
 from typing import Iterable, Tuple
 
+from pyflink.common import Row
 from pyflink.common.typeinfo import Types
 
 
-@dataclasses.dataclass
-class SensorReading:
-    id: str
-    timestamp: int
-    num_records: int
-    temperature: float
+class SensorReading(Row):
+    def __init__(self, *args, **kwargs):
+        attributes = ["id", "timestamp", "num_records", "temperature"]
+        if args:
+            raise RuntimeError("should only be instantiated by keywards arguments")
+        if set(attributes) != set(kwargs.keys()):
+            raise AttributeError(f"should have the same attributes to {', '.join(attributes)}")
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def process_elements(elements: Iterable[Tuple[int, int, datetime.datetime]]):
