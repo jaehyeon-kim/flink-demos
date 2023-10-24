@@ -1,6 +1,5 @@
 import datetime
 import dataclasses
-import random
 from typing import Iterable, Tuple
 
 from pyflink.common.typeinfo import Types

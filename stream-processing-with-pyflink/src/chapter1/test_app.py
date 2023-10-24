@@ -2,7 +2,6 @@ import datetime
 import pytest
 
 from pyflink.common import WatermarkStrategy
-from pyflink.common.typeinfo import Types
 from pyflink.common.watermark_strategy import TimestampAssigner, Duration
 from pyflink.datastream import DataStream, StreamExecutionEnvironment
 
