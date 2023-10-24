@@ -25,7 +25,7 @@ class AggreteProcessWindowFunction(ProcessWindowFunction):
         self,
         key: int,
         context: ProcessWindowFunction.Context,
-        elements: Iterable[Tuple[int, datetime.datetime]],
+        elements: Iterable[Tuple[int, int, datetime.datetime]],
     ) -> Iterable[Row]:
         id, count, temperature = SensorReading.process_elements(elements)
         yield Row(
@@ -74,12 +74,14 @@ if __name__ == "__main__":
         """
         CREATE TABLE sensor_source (
             `id`        INT,
+            `rn`        INT,
             `log_time`  TIMESTAMP(3)
         )
         WITH (
             'connector' = 'faker',
             'rows-per-second' = '10',
             'fields.id.expression' = '#{number.numberBetween ''0'',''20''}',
+            'fields.rn.expression' = '#{number.numberBetween ''0'',''100''}',
             'fields.log_time.expression' =  '#{date.past ''10'',''5'',''SECONDS''}'
         );
         """
@@ -87,10 +89,11 @@ if __name__ == "__main__":
 
     class SourceTimestampAssigner(TimestampAssigner):
         def extract_timestamp(self, value, record_timestamp):
-            return int(value[1].strftime("%s")) * 1000
+            return int(value[2].strftime("%s")) * 1000
 
     source_stream = t_env.to_append_stream(
-        t_env.from_path("sensor_source"), Types.TUPLE([Types.INT(), Types.SQL_TIMESTAMP()])
+        t_env.from_path("sensor_source"),
+        Types.TUPLE([Types.INT(), Types.INT(), Types.SQL_TIMESTAMP()]),
     ).assign_timestamps_and_watermarks(
         WatermarkStrategy.for_bounded_out_of_orderness(
             Duration.of_seconds(5)

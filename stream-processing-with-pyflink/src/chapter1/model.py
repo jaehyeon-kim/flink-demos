@@ -14,7 +14,7 @@ class SensorReading:
     temperature: float
 
     @staticmethod
-    def process_elements(elements: Iterable[Tuple[int, datetime.datetime]]):
+    def process_elements(elements: Iterable[Tuple[int, int, datetime.datetime]]):
         id, count, temperature = None, 0, 0
         for e in elements:
             next_id = f"sensor_{e[0]}"
@@ -22,7 +22,7 @@ class SensorReading:
                 assert id == next_id
             id = next_id
             count += 1
-            temperature += 65 + (random.random() * 20)
+            temperature += 65 + (e[1] / 100 * 20)
         return id, count, temperature
 
     @staticmethod

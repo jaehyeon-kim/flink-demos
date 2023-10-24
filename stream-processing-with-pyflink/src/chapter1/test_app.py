@@ -1,4 +1,4 @@
-import time
+import datetime
 import pytest
 
 from pyflink.common import WatermarkStrategy
@@ -10,38 +10,72 @@ from model import SensorReading
 from app import define_workflow
 
 
-def create_sensor_source(id: int, rand: int):
-    assert id >= 0 and id <= 20
-    assert rand >= 0 and rand <= 100
-    return id, rand
-
-
 @pytest.fixture(scope="module")
 def env():
     env = StreamExecutionEnvironment.get_execution_environment()
     yield env
 
 
-def test_define_workflow_should_group_by_key(env):
-    source_1 = create_sensor_source(0, 10)
-    source_2 = create_sensor_source(0, 20)
+def test_process_elements_return_correct_id_and_count():
+    elements = [(1, 0, datetime.datetime.now()), (1, 0, datetime.datetime.now())]
+    id, count, temperature = SensorReading.process_elements(elements)
 
-    class DefaultTimestampAssigner(TimestampAssigner):
+    assert id == "sensor_1"
+    assert count == 2
+    assert temperature == 65 * 2
+
+
+def test_define_workflow_should_aggregate_values_by_id(env):
+    source_1 = (1, 0, datetime.datetime.now())
+    source_2 = (1, 0, datetime.datetime.now() + datetime.timedelta(milliseconds=200))
+    source_3 = (2, 0, datetime.datetime.now())
+
+    class SourceTimestampAssigner(TimestampAssigner):
         def extract_timestamp(self, value, record_timestamp):
-            return int(time.time_ns() / 1000000)
+            return int(value[2].strftime("%s")) * 1000
 
     source_stream: DataStream = env.from_collection(
-        collection=[source_1, source_2]
+        collection=[source_1, source_2, source_3]
     ).assign_timestamps_and_watermarks(
         WatermarkStrategy.for_bounded_out_of_orderness(
             Duration.of_seconds(5)
-        ).with_timestamp_assigner(DefaultTimestampAssigner())
+        ).with_timestamp_assigner(SourceTimestampAssigner())
     )
 
     elements = list(define_workflow(source_stream).execute_and_collect())
-    print(int(time.time_ns() / 1000000))
-    print(elements)
+    for e in elements:
+        if e.id == "sensor_1":
+            assert e.num_records == 2
+            assert e.temperature == 65
+        elif e.id == "sensor_2":
+            assert e.num_records == 1
+            assert e.temperature == 65
+        else:
+            RuntimeError("incorrect sensor id")
 
 
-# def test_define_workflow_should_aggregate_values_over_window(env):
-#     pass
+def test_define_workflow_should_aggregate_values_by_minute(env):
+    source_1 = (1, 0, datetime.datetime.now())
+    source_2 = (1, 0, datetime.datetime.now() + datetime.timedelta(milliseconds=200))
+    source_3 = (1, 100, datetime.datetime.now() + datetime.timedelta(milliseconds=1000))
+
+    class SourceTimestampAssigner(TimestampAssigner):
+        def extract_timestamp(self, value, record_timestamp):
+            return int(value[2].strftime("%s")) * 1000
+
+    source_stream: DataStream = env.from_collection(
+        collection=[source_1, source_2, source_3]
+    ).assign_timestamps_and_watermarks(
+        WatermarkStrategy.for_bounded_out_of_orderness(
+            Duration.of_seconds(5)
+        ).with_timestamp_assigner(SourceTimestampAssigner())
+    )
+
+    elements = list(define_workflow(source_stream).execute_and_collect())
+    for e in elements:
+        if e.num_records == 1:
+            assert e.temperature == 85
+        elif e.num_records == 2:
+            assert e.temperature == 65
+        else:
+            raise RuntimeError("records grouped incorrectly")
