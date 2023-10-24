@@ -33,7 +33,7 @@ class AggreteProcessWindowFunction(ProcessWindowFunction):
             timestamp=int(context.window().end),
             num_records=count,
             temperature=round(temperature / count, 2),
-        )
+        ).to_row()
 
 
 def define_workflow(source_stream: DataStream):
