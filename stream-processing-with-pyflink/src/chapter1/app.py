@@ -40,7 +40,7 @@ def define_workflow(source_stream: DataStream):
     sensor_stream = (
         source_stream.key_by(lambda e: e[0])
         .window(TumblingEventTimeWindows.of(Time.seconds(1)))
-        .process(AggreteProcessWindowFunction(), output_type=SensorReading.get_value_type())
+        .process(AggreteProcessWindowFunction(), output_type=SensorReading.set_value_type_info())
     )
     return sensor_stream
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     ## cluster execution
     docker exec jobmanager /opt/flink/bin/flink run \
         --python /tmp/src/chapter1/app.py \
-        --pyFiles file:///tmp/src/chapter1/model.py \
+        --pyFiles file:///tmp/src/chapter1/type_helper.py,file:///tmp/src/chapter1/model.py \
         -d
     """
 
@@ -108,12 +108,12 @@ if __name__ == "__main__":
             .set_topic("sensor-reading")
             .set_key_serialization_schema(
                 JsonRowSerializationSchema.builder()
-                .with_type_info(SensorReading.get_key_type())
+                .with_type_info(SensorReading.set_key_type_info())
                 .build()
             )
             .set_value_serialization_schema(
                 JsonRowSerializationSchema.builder()
-                .with_type_info(SensorReading.get_value_type())
+                .with_type_info(SensorReading.set_value_type_info())
                 .build()
             )
             .build()
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         .build()
     )
 
-    define_workflow(source_stream).print()
-    # define_workflow(source_stream).sink_to(sensor_sink).name("sensor_sink").uid("sensor_sink")
+    # define_workflow(source_stream).print()
+    define_workflow(source_stream).sink_to(sensor_sink).name("sensor_sink").uid("sensor_sink")
 
     env.execute("Compute average sensor temperature")

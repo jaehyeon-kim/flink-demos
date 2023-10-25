@@ -5,9 +5,11 @@ from typing import Iterable, Tuple
 from pyflink.common import Row
 from pyflink.common.typeinfo import Types
 
+from type_helper import TypeMapping, set_type_info
+
 
 @dataclasses.dataclass
-class SensorReading:
+class SensorReading(TypeMapping):
     id: int
     timestamp: int
     num_records: int
@@ -33,15 +35,18 @@ class SensorReading:
         return id, count, temperature
 
     @staticmethod
-    def get_key_type():
-        return Types.ROW_NAMED(
-            field_names=["id"],
-            field_types=[Types.STRING()],
-        )
+    def type_mapping():
+        return {
+            "id": Types.STRING(),
+            "timestamp": Types.LONG(),
+            "num_records": Types.INT(),
+            "temperature": Types.DOUBLE(),
+        }
 
     @staticmethod
-    def get_value_type():
-        return Types.ROW_NAMED(
-            field_names=["id", "timestamp", "num_records", "temperature"],
-            field_types=[Types.STRING(), Types.LONG(), Types.INT(), Types.DOUBLE()],
-        )
+    def set_key_type_info():
+        return set_type_info(SensorReading.type_mapping(), selects=["id"])
+
+    @staticmethod
+    def set_value_type_info():
+        return set_type_info(SensorReading.type_mapping())
