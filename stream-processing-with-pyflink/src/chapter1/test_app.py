@@ -1,6 +1,7 @@
 import datetime
-import pytest
+from typing import List
 
+import pytest
 from pyflink.common import WatermarkStrategy
 from pyflink.common.watermark_strategy import TimestampAssigner, Duration
 from pyflink.datastream import DataStream, StreamExecutionEnvironment
@@ -41,7 +42,7 @@ def test_define_workflow_should_aggregate_values_by_id(env):
         ).with_timestamp_assigner(SourceTimestampAssigner())
     )
 
-    elements = list(define_workflow(source_stream).execute_and_collect())
+    elements: List[SensorReading] = list(define_workflow(source_stream).execute_and_collect())
     for e in elements:
         if e.id == "sensor_1":
             assert e.num_records == 2
@@ -70,7 +71,7 @@ def test_define_workflow_should_aggregate_values_by_minute(env):
         ).with_timestamp_assigner(SourceTimestampAssigner())
     )
 
-    elements = list(define_workflow(source_stream).execute_and_collect())
+    elements: List[SensorReading] = list(define_workflow(source_stream).execute_and_collect())
     for e in elements:
         if e.num_records == 1:
             assert e.temperature == 85

@@ -33,14 +33,14 @@ class AggreteProcessWindowFunction(ProcessWindowFunction):
             timestamp=int(context.window().end),
             num_records=count,
             temperature=round(temperature / count, 2),
-        ).to_row()
+        )
 
 
 def define_workflow(source_stream: DataStream):
     sensor_stream = (
         source_stream.key_by(lambda e: e[0])
         .window(TumblingEventTimeWindows.of(Time.seconds(1)))
-        .process(AggreteProcessWindowFunction(), output_type=SensorReading.set_value_type_info())
+        .process(AggreteProcessWindowFunction())
     )
     return sensor_stream
 
@@ -88,7 +88,9 @@ if __name__ == "__main__":
     )
 
     class SourceTimestampAssigner(TimestampAssigner):
-        def extract_timestamp(self, value, record_timestamp):
+        def extract_timestamp(
+            self, value: Tuple[int, int, datetime.datetime], record_timestamp: int
+        ):
             return int(value[2].strftime("%s")) * 1000
 
     source_stream = t_env.to_append_stream(
@@ -122,7 +124,11 @@ if __name__ == "__main__":
         .build()
     )
 
-    # define_workflow(source_stream).print()
-    define_workflow(source_stream).sink_to(sensor_sink).name("sensor_sink").uid("sensor_sink")
+    define_workflow(source_stream).map(
+        SensorReading.to_row, output_type=SensorReading.set_value_type_info()
+    ).print()
+    # define_workflow(source_stream).map(
+    #     SensorReading.to_row, output_type=SensorReading.set_value_type_info()
+    # ).sink_to(sensor_sink).name("sensor_sink").uid("sensor_sink")
 
     env.execute("Compute average sensor temperature")
