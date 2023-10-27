@@ -17,7 +17,7 @@ from pyflink.datastream.connectors.kafka import (
 )
 from pyflink.datastream.formats.json import JsonRowSerializationSchema
 
-from model import SensorReading
+from utils.model import SensorReading
 
 
 class AggreteProcessWindowFunction(ProcessWindowFunction):
@@ -124,9 +124,7 @@ if __name__ == "__main__":
         .build()
     )
 
-    define_workflow(source_stream).map(
-        SensorReading.to_row, output_type=SensorReading.set_value_type_info()
-    ).print()
+    define_workflow(source_stream).print()
     # define_workflow(source_stream).map(
     #     SensorReading.to_row, output_type=SensorReading.set_value_type_info()
     # ).sink_to(sensor_sink).name("sensor_sink").uid("sensor_sink")

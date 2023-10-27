@@ -6,7 +6,7 @@ from pyflink.common import WatermarkStrategy
 from pyflink.common.watermark_strategy import TimestampAssigner, Duration
 from pyflink.datastream import DataStream, StreamExecutionEnvironment
 
-from model import SensorReading
+from utils.model import SensorReading
 from app import define_workflow
 
 
