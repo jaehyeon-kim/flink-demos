@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Tuple
 
 import pytest
 from pyflink.common import WatermarkStrategy
@@ -31,7 +31,9 @@ def test_define_workflow_should_aggregate_values_by_id(env):
     source_3 = (2, 0, datetime.datetime.now())
 
     class SourceTimestampAssigner(TimestampAssigner):
-        def extract_timestamp(self, value, record_timestamp):
+        def extract_timestamp(
+            self, value: Tuple[int, int, datetime.datetime], record_timestamp: int
+        ):
             return int(value[2].strftime("%s")) * 1000
 
     source_stream: DataStream = env.from_collection(
@@ -60,7 +62,9 @@ def test_define_workflow_should_aggregate_values_by_minute(env):
     source_3 = (1, 100, datetime.datetime.now() + datetime.timedelta(milliseconds=1000))
 
     class SourceTimestampAssigner(TimestampAssigner):
-        def extract_timestamp(self, value, record_timestamp):
+        def extract_timestamp(
+            self, value: Tuple[int, int, datetime.datetime], record_timestamp: int
+        ):
             return int(value[2].strftime("%s")) * 1000
 
     source_stream: DataStream = env.from_collection(
