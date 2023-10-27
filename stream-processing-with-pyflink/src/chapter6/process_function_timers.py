@@ -59,7 +59,7 @@ class TempIncAlertFunc(KeyedProcessFunction):
             )
 
     def on_timer(self, timestamp: int, ctx: "KeyedProcessFunction.OnTimerContext"):
-        sensor_reading = SensorReading(ctx.get_current_key(), timestamp, None, None)
+        sensor_reading = json.dumps({"id": ctx.get_current_key(), "timestamp": timestamp})
         if self.verbose:
             if ctx.get_current_key() == "sensor_1":
                 yield sensor_reading
@@ -72,7 +72,7 @@ def define_workflow(source_stream: DataStream, verbose: bool = False):
     return (
         source_stream.map(SensorReading.from_tuple)
         .key_by(lambda e: e.id)
-        .process(TempIncAlertFunc(verbose=verbose))
+        .process(TempIncAlertFunc(verbose=verbose), output_type=Types.STRING())
     )
 
 
