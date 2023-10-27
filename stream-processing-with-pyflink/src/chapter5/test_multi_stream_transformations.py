@@ -6,7 +6,7 @@ from pyflink.common import WatermarkStrategy
 from pyflink.common.watermark_strategy import TimestampAssigner, Duration
 from pyflink.datastream import DataStream, StreamExecutionEnvironment
 
-from model import Alert
+from utils.model import Alert
 from multi_stream_transformations import define_workflow
 
 

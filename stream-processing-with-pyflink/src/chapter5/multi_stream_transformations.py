@@ -10,7 +10,7 @@ from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.datastream.functions import CoFlatMapFunction
 from pyflink.table import StreamTableEnvironment
 
-from model import SensorReading, SmokeLevel, Alert
+from utils.model import SensorReading, SmokeLevel, Alert
 
 
 class RaiseAlertFlatMap(CoFlatMapFunction):

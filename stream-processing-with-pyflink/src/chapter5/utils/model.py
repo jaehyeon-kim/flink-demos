@@ -5,7 +5,7 @@ from typing import Iterable, Tuple
 from pyflink.common import Row
 from pyflink.common.typeinfo import Types
 
-from type_helper import TypeMapping, set_type_info
+from .type_helper import TypeMapping, set_type_info
 
 
 @dataclasses.dataclass

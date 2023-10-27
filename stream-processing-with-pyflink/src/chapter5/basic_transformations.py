@@ -8,7 +8,7 @@ from pyflink.common.watermark_strategy import TimestampAssigner, Duration
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.table import StreamTableEnvironment
 
-from model import SensorReading
+from utils.model import SensorReading
 
 
 if __name__ == "__main__":
