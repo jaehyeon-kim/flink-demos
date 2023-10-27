@@ -59,7 +59,7 @@ class TempIncAlertFunc(KeyedProcessFunction):
             )
 
     def on_timer(self, timestamp: int, ctx: "KeyedProcessFunction.OnTimerContext"):
-        sensor_reading = SensorReading(ctx.get_current_key(), timestamp, 1, self.last_temp.value())
+        sensor_reading = SensorReading(ctx.get_current_key(), timestamp, None, None)
         if self.verbose:
             if ctx.get_current_key() == "sensor_1":
                 yield sensor_reading
