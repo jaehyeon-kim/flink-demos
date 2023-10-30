@@ -4,3 +4,4 @@ apache-flink==1.17.1
 black
 pytest
 pytest-cov
+ipdb
