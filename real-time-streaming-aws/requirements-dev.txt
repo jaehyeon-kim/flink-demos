@@ -1,4 +1,7 @@
 -r producer/requirements.txt
-black
+apache-flink==1.15.2
+black==19.10b0
+boto3
 pytest
 pytest-cov
+ipdb

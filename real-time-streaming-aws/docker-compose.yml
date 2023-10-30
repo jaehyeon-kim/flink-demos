@@ -1,6 +1,58 @@
 version: "3.5"
 
 services:
+  jobmanager:
+    image: real-time-streaming-aws:1.15.2
+    command: jobmanager
+    container_name: jobmanager
+    ports:
+      - "8081:8081"
+    networks:
+      - appnet
+    volumes:
+      - ./loader:/etc/flink
+      - ./package:/etc/package
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=DOCKER
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+        rest.flamegraph.enabled: true
+        web.backpressure.refresh-interval: 10000
+  taskmanager:
+    image: real-time-streaming-aws:1.15.2
+    command: taskmanager
+    container_name: taskmanager
+    networks:
+      - appnet
+    volumes:
+      - flink_data:/tmp/
+      - ./loader:/etc/flink
+      - ./package:/etc/package
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=DOCKER
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 5
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+    depends_on:
+      - jobmanager
   zookeeper:
     image: bitnami/zookeeper:3.5
     container_name: zookeeper
@@ -61,3 +113,6 @@ volumes:
   kafka_0_data:
     driver: local
     name: kafka_0_data
+  flink_data:
+    driver: local
+    name: flink_data
