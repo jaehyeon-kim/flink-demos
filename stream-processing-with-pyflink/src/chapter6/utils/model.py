@@ -10,7 +10,7 @@ from .type_helper import TypeMapping, set_type_info
 
 @dataclasses.dataclass
 class SensorReading(TypeMapping):
-    id: int
+    id: str
     timestamp: int
     num_records: int
     temperature: float
