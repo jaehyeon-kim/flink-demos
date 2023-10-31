@@ -11,7 +11,7 @@ from pyflink.datastream import (
     RuntimeExecutionMode,
     TimeCharacteristic,
 )
-from pyflink.datastream.state import ValueStateDescriptor, ValueState
+from pyflink.datastream.state import ValueStateDescriptor
 from pyflink.datastream.functions import CoProcessFunction, RuntimeContext
 from pyflink.datastream.time_domain import TimeDomain
 from pyflink.table import StreamTableEnvironment

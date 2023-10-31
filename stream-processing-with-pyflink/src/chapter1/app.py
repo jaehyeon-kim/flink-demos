@@ -26,7 +26,7 @@ class AggreteProcessWindowFunction(ProcessWindowFunction):
         key: int,
         context: ProcessWindowFunction.Context,
         elements: Iterable[Tuple[int, int, datetime.datetime]],
-    ) -> Iterable[Row]:
+    ) -> Iterable[SensorReading]:
         id, count, temperature = SensorReading.process_elements(elements)
         yield SensorReading(
             id=id,

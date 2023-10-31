@@ -59,3 +59,12 @@ class SensorReading(TypeMapping):
     @staticmethod
     def set_value_type_info():
         return set_type_info(SensorReading.type_mapping())
+
+
+@dataclasses.dataclass
+class MinMaxTemp:
+    id: str
+    min_temp: float
+    max_temp: float
+    num_records: int
+    timestamp: int
