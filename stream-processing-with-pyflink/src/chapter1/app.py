@@ -70,16 +70,17 @@ if __name__ == "__main__":
         env.add_jars(*jar_paths)
 
     t_env = StreamTableEnvironment.create(stream_execution_environment=env)
+    t_env.get_config().set_local_timezone("Australia/Sydney")
     t_env.execute_sql(
         """
         CREATE TABLE sensor_source (
             `id`        INT,
             `rn`        INT,
-            `log_time`  TIMESTAMP(3)
+            `log_time`  TIMESTAMP_LTZ(3)
         )
         WITH (
             'connector' = 'faker',
-            'rows-per-second' = '10',
+            'rows-per-second' = '1',
             'fields.id.expression' = '#{number.numberBetween ''0'',''20''}',
             'fields.rn.expression' = '#{number.numberBetween ''0'',''100''}',
             'fields.log_time.expression' =  '#{date.past ''10'',''5'',''SECONDS''}'
