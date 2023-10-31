@@ -6,7 +6,7 @@
 *-demo-data
 pyflink-udemy/revenue.csv
 .external
-kda-package*
+*package.zip
 site_packages
 connectors
 airports.csv

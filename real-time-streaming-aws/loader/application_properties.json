@@ -2,15 +2,15 @@
   {
     "PropertyGroupId": "kinesis.analytics.flink.run.options",
     "PropertyMap": {
-      "python": "loader/processor.py",
-      "jarfile": "package/lib/kafka-connector-with-iam-auth-1.0.0.jar"
+      "python": "processor.py",
+      "jarfile": "package/lib/s3-data-loader-1.0.0.jar"
     }
   },
   {
     "PropertyGroupId": "source.config.0",
     "PropertyMap": {
       "table.name": "taxi_trip_source",
-      "file.path": "s3://emr-local-dev/taxi-csv/"
+      "file.path": "s3://<s3-bucket-name>/taxi-csv/"
     }
   },
   {

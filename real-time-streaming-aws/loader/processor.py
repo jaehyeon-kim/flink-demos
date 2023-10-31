@@ -13,7 +13,7 @@ table_env = TableEnvironment.create(env_settings)
 if RUNTIME_ENV == "LOCAL":
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
     PARENT_DIR = os.path.dirname(CURRENT_DIR)
-    PIPELINE_JAR = "kafka-connector-with-iam-auth-1.0.0.jar"
+    PIPELINE_JAR = "s3-data-loader-1.0.0.jar"
     APPLICATION_PROPERTIES_FILE_PATH = os.path.join(CURRENT_DIR, "application_properties.json")
     print(f"file://{os.path.join(PARENT_DIR, 'package', 'lib', PIPELINE_JAR)}")
     table_env.get_config().set(
@@ -151,6 +151,8 @@ def main():
     RUNTIME_ENV=LOCAL python loader/processor.py
 
     ## Execute in flink cluster on docker
+    # update file.path of source.config.0 in application_properties.json -> "file.path": "s3://<s3-bucket-name>/taxi-csv/"
+    # set AWS credentials environment variables
     export AWS_ACCESS_KEY_ID=<aws-access-key>
     export AWS_SECRET_ACCESS_KEY=<aws-secret-access-key>
     export AWS_SESSION_TOKEN=<aws-session-token>
