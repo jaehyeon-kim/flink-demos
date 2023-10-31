@@ -1,12 +1,11 @@
 import datetime
-from typing import List, Tuple
+from typing import Tuple
 
 import pytest
 from pyflink.common import WatermarkStrategy
 from pyflink.common.watermark_strategy import TimestampAssigner, Duration
 from pyflink.datastream import DataStream, StreamExecutionEnvironment
 
-from utils.model import SensorReading
 from side_outputs import define_workflow, main_stream_output, freezing_alarm_output
 
 
