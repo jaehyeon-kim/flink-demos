@@ -1,0 +1,24 @@
+[
+  {
+    "PropertyGroupId": "kinesis.analytics.flink.run.options",
+    "PropertyMap": {
+      "python": "processor.py",
+      "jarfile": "package/lib/s3-data-loader-1.0.0.jar"
+    }
+  },
+  {
+    "PropertyGroupId": "source.config.0",
+    "PropertyMap": {
+      "table.name": "taxi_trip_source",
+      "file.path": "s3://real-time-streaming-ap-southeast-2/taxi-csv/"
+    }
+  },
+  {
+    "PropertyGroupId": "sink.config.0",
+    "PropertyMap": {
+      "table.name": "taxi_trip_sink",
+      "topic.name": "taxi-trip",
+      "bootstrap.servers": "localhost:29092"
+    }
+  }
+]
