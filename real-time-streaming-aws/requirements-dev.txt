@@ -1,6 +1,6 @@
 -r producer/requirements.txt
-apache-flink==1.15.2
-black==19.10b0
+apache-flink==1.17.1
+black
 boto3
 pytest
 pytest-cov

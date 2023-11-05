@@ -10,7 +10,7 @@
     "PropertyGroupId": "source.config.0",
     "PropertyMap": {
       "table.name": "taxi_trip_source",
-      "file.path": "s3://<s3-bucket-name>/taxi-csv/"
+      "file.path": "s3://real-time-streaming-ap-southeast-2/taxi-csv/"
     }
   },
   {

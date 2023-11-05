@@ -1,0 +1,82 @@
+version: "3.5"
+
+services:
+  jobmanager:
+    image: real-time-streaming-aws:1.17.1
+    command: jobmanager
+    container_name: jobmanager
+    ports:
+      - "8081:8081"
+    networks:
+      - appnet
+    volumes:
+      - ./loader:/etc/flink
+      - ./package:/etc/package
+    environment:
+      - BOOTSTRAP_SERVERS=$BOOTSTRAP_SERVERS
+      - RUNTIME_ENV=DOCKER
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+        rest.flamegraph.enabled: true
+        web.backpressure.refresh-interval: 10000
+  taskmanager:
+    image: real-time-streaming-aws:1.17.1
+    command: taskmanager
+    container_name: taskmanager
+    networks:
+      - appnet
+    volumes:
+      - flink_data:/tmp/
+      - ./loader:/etc/flink
+      - ./package:/etc/package
+    environment:
+      - BOOTSTRAP_SERVERS=$BOOTSTRAP_SERVERS
+      - RUNTIME_ENV=DOCKER
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 5
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+    depends_on:
+      - jobmanager
+  kpow:
+    image: factorhouse/kpow-ce:91.5.1
+    container_name: kpow
+    ports:
+      - "3000:3000"
+    networks:
+      - appnet
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
+      BOOTSTRAP: $BOOTSTRAP_SERVERS
+      SECURITY_PROTOCOL: SASL_SSL
+      SASL_MECHANISM: AWS_MSK_IAM
+      SASL_JAAS_CONFIG: software.amazon.msk.auth.iam.IAMLoginModule required;
+      SASL_CLIENT_CALLBACK_HANDLER_CLASS: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+    env_file: # https://kpow.io/get-started/#individual
+      - ./kpow.env
+
+networks:
+  appnet:
+    name: app-network
+
+volumes:
+  flink_data:
+    driver: local
+    name: flink_data

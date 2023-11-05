@@ -4,7 +4,7 @@ import json
 
 from pyflink.table import EnvironmentSettings, TableEnvironment
 
-RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "AWS")  # LOCAL, DOCKER, AWS
+RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "LOCAL")  # LOCAL or DOCKER
 BOOTSTRAP_SERVERS = os.environ.get("BOOTSTRAP_SERVERS")  # overwrite app config
 
 env_settings = EnvironmentSettings.in_streaming_mode()
@@ -13,7 +13,7 @@ table_env = TableEnvironment.create(env_settings)
 if RUNTIME_ENV == "LOCAL":
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
     PARENT_DIR = os.path.dirname(CURRENT_DIR)
-    PIPELINE_JAR = "s3-data-loader-1.0.0.jar"
+    PIPELINE_JAR = "pyflink-pipeline-1.0.0.jar"
     APPLICATION_PROPERTIES_FILE_PATH = os.path.join(CURRENT_DIR, "application_properties.json")
     print(f"file://{os.path.join(PARENT_DIR, 'package', 'lib', PIPELINE_JAR)}")
     table_env.get_config().set(
@@ -143,22 +143,20 @@ def create_print_table(table_name: str):
 
 def main():
     """
-    ## Prep
-    docker build -t real-time-streaming-aws:1.15.2 .
-    docker-compose up -d
-
-    ## Execute locally
+    ## 1. prep
+    docker build -t real-time-streaming-aws:1.17.1 .
+    ## 2. start flink (and kafka) cluster
+    # with local Kafka cluster
+    docker-compose -f compose-local-kafka.yml up -d
+    # with MSK
+    docker-compose -f compose-msk.yml up -d
+    ## 3. run pyflink app
+    # local
     RUNTIME_ENV=LOCAL python loader/processor.py
-
-    ## Execute in flink cluster on docker
-    # update file.path of source.config.0 in application_properties.json -> "file.path": "s3://<s3-bucket-name>/taxi-csv/"
-    # set AWS credentials environment variables
-    export AWS_ACCESS_KEY_ID=<aws-access-key>
-    export AWS_SECRET_ACCESS_KEY=<aws-secret-access-key>
-    export AWS_SESSION_TOKEN=<aws-session-token>
+    # on flink cluster on docker
     docker exec jobmanager /opt/flink/bin/flink run \
         --python /etc/flink/processor.py \
-        --jarfile /etc/package/lib/kafka-connector-with-iam-auth-1.0.0.jar \
+        --jarfile /etc/package/lib/pyflink-pipeline-1.0.0.jar \
         -d
     """
     #### map source/sink properties
@@ -169,12 +167,7 @@ def main():
     print(">> source properties")
     print(source_properties)
     source_table_name = source_properties["table.name"]
-    if RUNTIME_ENV == "LOCAL":
-        CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-        PARENT_DIR = os.path.dirname(CURRENT_DIR)
-        source_file_path = f"file://{os.path.join(PARENT_DIR, 'infra', 'data')}"
-    else:
-        source_file_path = source_properties["file.path"]
+    source_file_path = source_properties["file.path"]
     ## sink
     sink_property_group_key = "sink.config.0"
     sink_properties = property_map(props, sink_property_group_key)

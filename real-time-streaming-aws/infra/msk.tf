@@ -110,17 +110,6 @@ resource "aws_security_group_rule" "msk_kafka_producer_inbound" {
   source_security_group_id = aws_security_group.kafka_producer[0].id
 }
 
-resource "aws_security_group_rule" "msk_loader_inbound" {
-  count                    = local.loader.to_create ? 1 : 0
-  type                     = "ingress"
-  description              = "s3 loader pyflink app access"
-  security_group_id        = aws_security_group.msk.id
-  protocol                 = "tcp"
-  from_port                = 9098
-  to_port                  = 9098
-  source_security_group_id = aws_security_group.loader_sg[0].id
-}
-
 resource "aws_cloudwatch_log_group" "msk_cluster_lg" {
   name = "/msk/cluster/${local.name}"
 

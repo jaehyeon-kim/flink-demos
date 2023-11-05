@@ -84,8 +84,3 @@ output "kafka_lambda_arn" {
   value       = local.producer.to_create ? module.kafka_producer.lambda_function_arn : null
 }
 
-# s3 data loader flink app
-output "loader_app_arn" {
-  description = "S3 data loader flink app ARN"
-  value       = local.loader.to_create ? aws_kinesisanalyticsv2_application.loader_app[0].arn : null
-}

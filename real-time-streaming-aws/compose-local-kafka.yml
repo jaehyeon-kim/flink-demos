@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   jobmanager:
-    image: real-time-streaming-aws:1.15.2
+    image: real-time-streaming-aws:1.17.1
     command: jobmanager
     container_name: jobmanager
     ports:
@@ -28,7 +28,7 @@ services:
         rest.flamegraph.enabled: true
         web.backpressure.refresh-interval: 10000
   taskmanager:
-    image: real-time-streaming-aws:1.15.2
+    image: real-time-streaming-aws:1.17.1
     command: taskmanager
     container_name: taskmanager
     networks:
@@ -81,8 +81,9 @@ services:
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,EXTERNAL://:29092
       - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://localhost:29092
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-      - KAFKA_CFG_NUM_PARTITIONS=5
+      - KAFKA_CFG_NUM_PARTITIONS=3
       - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
     volumes:
       - kafka_0_data:/bitnami/kafka
     depends_on:

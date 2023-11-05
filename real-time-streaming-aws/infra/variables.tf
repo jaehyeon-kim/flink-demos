@@ -10,12 +10,6 @@ variable "producer_to_create" {
   default     = false
 }
 
-variable "loader_to_create" {
-  description = "Flag to indicate whether to create S3 data loader"
-  type        = bool
-  default     = false
-}
-
 locals {
   name        = "real-time-streaming"
   region      = data.aws_region.current.name
@@ -27,7 +21,7 @@ locals {
   }
 
   default_bucket = {
-    name       = "${local.name}-${data.aws_caller_identity.current.account_id}-${local.region}"
+    name       = "${local.name}-${local.region}"
     to_set_acl = false
   }
 
@@ -65,13 +59,6 @@ locals {
       topic_name  = "taxi-rides"
       max_run_sec = 60
     }
-  }
-
-  loader = {
-    to_create      = var.loader_to_create
-    runtime_env    = "FLINK-1_15"
-    package_name   = "loader-package.zip"
-    data_file_name = "taxi-trips.csv"
   }
 
   tags = {

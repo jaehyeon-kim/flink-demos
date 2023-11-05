@@ -1,9 +1,9 @@
-FROM flink:1.15.2
+FROM flink:1.17.1
 
 ARG PYTHON_VERSION
 ENV PYTHON_VERSION=${PYTHON_VERSION:-3.8.10}
 ARG FLINK_VERSION
-ENV FLINK_VERSION=${FLINK_VERSION:-1.15.2}
+ENV FLINK_VERSION=${FLINK_VERSION:-1.17.1}
 
 RUN mkdir ./plugins/s3-fs-hadoop \
   && cp ./opt/flink-s3-fs-hadoop-${FLINK_VERSION}.jar ./plugins/s3-fs-hadoop 

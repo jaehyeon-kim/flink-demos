@@ -22,3 +22,11 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "default_bucket" {
     }
   }
 }
+
+resource "aws_s3_object" "kda_package" {
+  bucket = aws_s3_bucket.default_bucket.id
+  key    = "taxi-csv/taxi-trips.csv"
+  source = "${dirname(path.cwd)}/data/taxi-trips.csv"
+
+  etag = filemd5("${dirname(path.cwd)}/data/taxi-trips.csv")
+}
