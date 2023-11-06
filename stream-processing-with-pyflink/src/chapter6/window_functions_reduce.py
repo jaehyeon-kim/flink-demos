@@ -35,7 +35,7 @@ def define_workflow(source_stream: DataStream):
 if __name__ == "__main__":
     """
     ## local execution
-    python src/chapter5/window_functions_a.py
+    python src/chapter6/window_functions_reduce.py
     """
 
     RUNTIME_ENV = os.getenv("RUNTIME_ENV", "local")

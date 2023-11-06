@@ -40,7 +40,7 @@ def define_workflow(source_stream: DataStream):
 if __name__ == "__main__":
     """
     ## local execution
-    python src/chapter5/side_outputs.py
+    python src/chapter6/side_outputs.py
     """
 
     RUNTIME_ENV = os.getenv("RUNTIME_ENV", "local")

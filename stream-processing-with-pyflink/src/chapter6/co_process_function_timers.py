@@ -72,7 +72,7 @@ def define_workflow(source_stream: DataStream, filter_switches: DataStream):
 if __name__ == "__main__":
     """
     ## local execution
-    python src/chapter5/process_function_timers.py
+    python src/chapter6/co_process_function_timers.py
     """
     RUNTIME_ENV = os.getenv("RUNTIME_ENV", "local")
 
