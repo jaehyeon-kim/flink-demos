@@ -2,9 +2,9 @@
 SCRIPT_DIR="$(cd $(dirname "$0"); pwd)"
 SRC_PATH=$SCRIPT_DIR/package
 
-# remove contents under $SRC_PATH (except for pyflink-pipeline) and kda-package.zip file
+# remove contents under $SRC_PATH (except for pyflink-pipeline)
 shopt -s extglob
-rm -rf $SRC_PATH/!(pyflink-pipeline) loader-package.zip
+rm -rf $SRC_PATH/!(pyflink-pipeline)
 
 ## Generate Uber Jar for PyFlink app for MSK cluster with IAM authN
 echo "generate Uber jar for PyFlink app..."
