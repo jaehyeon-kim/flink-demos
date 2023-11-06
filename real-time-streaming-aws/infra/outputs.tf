@@ -83,3 +83,4 @@ output "kafka_lambda_arn" {
   description = "Lambda Kafka producer ARN"
   value       = local.producer.to_create ? module.kafka_producer.lambda_function_arn : null
 }
+

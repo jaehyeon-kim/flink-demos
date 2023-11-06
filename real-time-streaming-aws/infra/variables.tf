@@ -21,7 +21,7 @@ locals {
   }
 
   default_bucket = {
-    name       = "${local.name}-${data.aws_caller_identity.current.account_id}-${local.region}"
+    name       = "${local.name}-${local.region}"
     to_set_acl = false
   }
 
