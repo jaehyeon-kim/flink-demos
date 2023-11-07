@@ -10,42 +10,61 @@ from pyflink.datastream import (
     StreamExecutionEnvironment,
     RuntimeExecutionMode,
 )
-from pyflink.datastream.state import ValueStateDescriptor
-from pyflink.datastream.functions import FlatMapFunction, RuntimeContext
+from pyflink.datastream.state import ValueStateDescriptor, ValueState
+from pyflink.datastream.functions import KeyedProcessFunction, RuntimeContext
 from pyflink.table import StreamTableEnvironment
 
 from utils.model import SensorReading
 
 
-class TemperatureAlterFunction(FlatMapFunction):
+class SelfCleaningTemperatureAlertFunction(KeyedProcessFunction):
     def __init__(self, threshold: float) -> None:
         self.last_temp = None
+        self.last_timer = None
         self.threshold = threshold
 
     def open(self, runtime_context: RuntimeContext):
         self.last_temp = runtime_context.get_state(
             ValueStateDescriptor("last_temp", Types.DOUBLE())
         )
+        self.last_timer = runtime_context.get_state(
+            ValueStateDescriptor("last_timer", Types.LONG())
+        )
 
-    def flat_map(self, value: SensorReading):
+    def process_element(self, value: SensorReading, ctx: KeyedProcessFunction.Context):
+        # compute timestamp of new clearn up timer as record timestamp + one hour
+        new_timer = ctx.timestamp() + (3600 * 1000)
+        # get timestmp of current timer
+        cur_timer = self.last_timer.value()
+        # delete previous timer and register new timer
+        ctx.timer_service().delete_event_time_timer(cur_timer or 0)
+        ctx.timer_service().register_event_time_timer(new_timer)
+        # update timer timestamp state
+        self.last_timer.update(new_timer)
+
+        # check if we need to emit an alert
         temp_diff = round(abs(value.temperature - (self.last_temp.value() or 0.0)), 2)
         if self.last_temp.value() is not None and temp_diff > self.threshold:
             yield value.id, value.temperature, self.last_temp.value(), temp_diff, self.threshold
         self.last_temp.update(value.temperature)
+
+    def on_timer(self, timestamp: int, ctx: KeyedProcessFunction.OnTimerContext):
+        self.last_temp.clear()
+        self.last_timer.clear()
 
 
 def define_workflow(source_stream: DataStream):
     return (
         source_stream.map(SensorReading.from_tuple)
         .key_by(lambda e: e.id)
-        .flat_map(TemperatureAlterFunction(1.7))
+        .process(SelfCleaningTemperatureAlertFunction(1.7))
     )
 
 
 if __name__ == "__main__":
     """
     ## local execution
-    python src/chapter7/keyed_state_function.py
+    python src/chapter7/stateful_process_function.py
     """
 
     RUNTIME_ENV = os.getenv("RUNTIME_ENV", "local")
@@ -97,4 +116,4 @@ if __name__ == "__main__":
 
     define_workflow(source_stream).print()
 
-    env.execute("Generate Temperature Alerts")
+    env.execute("Generate Temperature Alerts + Clear State after 1 Hour")
