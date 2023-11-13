@@ -2,11 +2,14 @@ import os
 import re
 import json
 
+from pyflink.common import Types
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.table import StreamTableEnvironment
+from pyflink.table.udf import udf
 
 RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "LOCAL")  # LOCAL or DOCKER
 BOOTSTRAP_SERVERS = os.environ.get("BOOTSTRAP_SERVERS")  # overwrite app config
+
 
 env = StreamExecutionEnvironment.get_execution_environment()
 env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
@@ -28,6 +31,9 @@ else:
     APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"
 
 table_env = StreamTableEnvironment.create(stream_execution_environment=env)
+table_env.create_temporary_function(
+    "add_source", udf(lambda: "NYCTAXI", result_type=Types.STRING())
+)
 
 
 def get_application_properties():
@@ -115,6 +121,7 @@ def create_sink_table(table_name: str, file_path: str):
         trip_duration       INT,
         google_distance     INT,
         google_duration     INT,
+        source              VARCHAR,
         `year`              VARCHAR,
         `month`             VARCHAR,
         `date`              VARCHAR,
@@ -148,6 +155,7 @@ def create_print_table(table_name: str):
         trip_duration       INT,
         google_distance     INT,
         google_duration     INT,
+        source              VARCHAR,
         `year`              VARCHAR,
         `month`             VARCHAR,
         `date`              VARCHAR,
@@ -178,6 +186,7 @@ def set_insert_sql(source_table_name: str, sink_table_name: str):
         trip_duration,
         google_distance,
         google_duration,
+        add_source() AS source,
         DATE_FORMAT(pickup_datetime, 'yyyy') AS `year`,
         DATE_FORMAT(pickup_datetime, 'MM') AS `month`,
         DATE_FORMAT(pickup_datetime, 'dd') AS `date`,
