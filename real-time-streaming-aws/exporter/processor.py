@@ -2,7 +2,6 @@ import os
 import re
 import json
 
-from pyflink.common import Types
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.table import StreamTableEnvironment
 from pyflink.table.udf import udf
@@ -28,11 +27,11 @@ if RUNTIME_ENV == "LOCAL":
     print(JAR_PATHS)
     env.add_jars(*JAR_PATHS)
 else:
-    APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"
+    APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/exporter/application_properties.json"
 
 table_env = StreamTableEnvironment.create(stream_execution_environment=env)
 table_env.create_temporary_function(
-    "add_source", udf(lambda: "NYCTAXI", result_type=Types.STRING())
+    "add_source", udf(lambda: "NYCTAXI", result_type="STRING")
 )
 
 
@@ -206,22 +205,26 @@ def main():
     print(">> source properties")
     print(source_properties)
     source_table_name = source_properties["table.name"]
-    source_file_path = source_properties["file.path"]
+    source_topic_name = source_properties["topic.name"]
+    source_bootstrap_servers = (
+        BOOTSTRAP_SERVERS or source_properties["bootstrap.servers"]
+    )
     ## sink
     sink_property_group_key = "sink.config.0"
     sink_properties = property_map(props, sink_property_group_key)
     print(">> sink properties")
     print(sink_properties)
     sink_table_name = sink_properties["table.name"]
-    sink_topic_name = sink_properties["topic.name"]
-    sink_bootstrap_servers = BOOTSTRAP_SERVERS or sink_properties["bootstrap.servers"]
+    sink_file_path = sink_properties["file.path"]
     ## print
     print_table_name = "sink_print"
     #### create tables
-    table_env.execute_sql(create_source_table(source_table_name, source_file_path))
     table_env.execute_sql(
-        create_sink_table(sink_table_name, sink_topic_name, sink_bootstrap_servers)
+        create_source_table(
+            source_table_name, source_topic_name, source_bootstrap_servers
+        )
     )
+    table_env.execute_sql(create_sink_table(sink_table_name, sink_file_path))
     table_env.execute_sql(create_print_table(print_table_name))
     #### insert into sink tables
     if RUNTIME_ENV == "LOCAL":

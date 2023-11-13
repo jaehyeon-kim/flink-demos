@@ -11,6 +11,7 @@ services:
       - appnet
     volumes:
       - ./loader:/etc/flink
+      - ./exporter:/etc/flink/exporter
       - ./package:/etc/package
     environment:
       - BOOTSTRAP_SERVERS=$BOOTSTRAP_SERVERS
@@ -35,8 +36,7 @@ services:
       - appnet
     volumes:
       - flink_data:/tmp/
-      - ./loader:/etc/flink
-      - ./package:/etc/package
+      - ./:/etc/flink
     environment:
       - BOOTSTRAP_SERVERS=$BOOTSTRAP_SERVERS
       - RUNTIME_ENV=DOCKER

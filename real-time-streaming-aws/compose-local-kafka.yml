@@ -10,8 +10,7 @@ services:
     networks:
       - appnet
     volumes:
-      - ./loader:/etc/flink
-      - ./package:/etc/package
+      - ./:/etc/flink
     environment:
       - BOOTSTRAP_SERVERS=kafka-0:9092
       - RUNTIME_ENV=DOCKER
@@ -35,8 +34,7 @@ services:
       - appnet
     volumes:
       - flink_data:/tmp/
-      - ./loader:/etc/flink
-      - ./package:/etc/package
+      - ./:/etc/flink
     environment:
       - BOOTSTRAP_SERVERS=kafka-0:9092
       - RUNTIME_ENV=DOCKER

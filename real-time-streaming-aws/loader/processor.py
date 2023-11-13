@@ -23,7 +23,7 @@ if RUNTIME_ENV == "LOCAL":
         f"file://{os.path.join(PARENT_DIR, 'package', 'lib', PIPELINE_JAR)}",
     )
 else:
-    APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/application_properties.json"
+    APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/loader/application_properties.json"
 
 
 def get_application_properties():
@@ -159,8 +159,8 @@ def main():
     RUNTIME_ENV=LOCAL python loader/processor.py
     # on flink cluster on docker
     docker exec jobmanager /opt/flink/bin/flink run \
-        --python /etc/flink/processor.py \
-        --jarfile /etc/package/lib/pyflink-pipeline-1.0.0.jar \
+        --python /etc/flink/loader/processor.py \
+        --jarfile /etc/flink/package/lib/lab2-pipeline-1.0.0.jar \
         -d
     """
     #### map source/sink properties
