@@ -13,8 +13,10 @@ table_env = TableEnvironment.create(env_settings)
 if RUNTIME_ENV == "LOCAL":
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
     PARENT_DIR = os.path.dirname(CURRENT_DIR)
-    PIPELINE_JAR = "pyflink-pipeline-1.0.0.jar"
-    APPLICATION_PROPERTIES_FILE_PATH = os.path.join(CURRENT_DIR, "application_properties.json")
+    PIPELINE_JAR = "lab2-pipeline-1.0.0.jar"
+    APPLICATION_PROPERTIES_FILE_PATH = os.path.join(
+        CURRENT_DIR, "application_properties.json"
+    )
     print(f"file://{os.path.join(PARENT_DIR, 'package', 'lib', PIPELINE_JAR)}")
     table_env.get_config().set(
         "pipeline.jars",
@@ -31,7 +33,9 @@ def get_application_properties():
             properties = json.loads(contents)
             return properties
     else:
-        raise RuntimeError(f"A file at '{APPLICATION_PROPERTIES_FILE_PATH}' was not found")
+        raise RuntimeError(
+            f"A file at '{APPLICATION_PROPERTIES_FILE_PATH}' was not found"
+        )
 
 
 def property_map(props: dict, property_group_id: str):

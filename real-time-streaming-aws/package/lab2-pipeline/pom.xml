@@ -21,11 +21,11 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.amazonaws.services.kinesisanalytics</groupId>
-	<artifactId>pyflink-pipeline</artifactId>
+	<artifactId>lab2-pipeline</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
-	<name>Uber Jar for PyFlink App</name>
+	<name>Uber Jar for Lab 2</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
