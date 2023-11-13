@@ -53,7 +53,7 @@ CREATE TABLE taxi_rides_sink (
     `hour`              VARCHAR
 ) PARTITIONED BY (`year`, `month`, `date`, `hour`) WITH (
     'connector' = 'filesystem',
-    'path' = 's3://real-time-streaming-ap-southeast-2/taxi_out/',
+    'path' = 's3://real-time-streaming-ap-southeast-2/taxi-rides/',
     'format' = 'parquet',
     'sink.partition-commit.delay'='1 h',
     'sink.partition-commit.policy.kind'='success-file'
