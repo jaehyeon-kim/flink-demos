@@ -25,5 +25,5 @@ RUN apt-get update -y && \
 # install PyFlink
 RUN pip3 install apache-flink==${FLINK_VERSION}
 
-# add kafka client for Flink SQL client
+# add kafka client for Flink SQL client, will be added manually
 RUN wget -P /etc/lib/ https://repo.maven.apache.org/maven2/org/apache/kafka/kafka-clients/3.2.3/kafka-clients-3.2.3.jar;
