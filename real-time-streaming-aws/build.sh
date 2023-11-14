@@ -6,7 +6,7 @@ SRC_PATH=$SCRIPT_DIR/package
 shopt -s extglob
 rm -rf $SRC_PATH/!(lab*)
 
-## Generate Uber Jar for PyFlink app for MSK cluster with IAM authN
+## Generate Uber jar file for individual labs
 echo "generate Uber jar for PyFlink app..."
 mkdir $SRC_PATH/lib
 mvn clean install -f $SRC_PATH/lab2-pipeline/pom.xml \
