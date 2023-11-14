@@ -2,51 +2,71 @@ version: "3.5"
 
 services:
   jobmanager:
-    image: real-time-streaming-aws:1.17.1
+    image: stream-processing-with-pyflink:1.17.1
     command: jobmanager
     container_name: jobmanager
     ports:
       - "8081:8081"
     networks:
       - appnet
-    volumes:
-      - ./:/etc/flink
     environment:
       - BOOTSTRAP_SERVERS=kafka-0:9092
-      - RUNTIME_ENV=DOCKER
-      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-      # - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      - RUNTIME_ENV=docker
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         state.backend: filesystem
         state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
         heartbeat.interval: 1000
         heartbeat.timeout: 5000
         rest.flamegraph.enabled: true
         web.backpressure.refresh-interval: 10000
-  taskmanager:
-    image: real-time-streaming-aws:1.17.1
+    volumes:
+      - ./logs/flink/jm:/opt/flink/temp
+      - ./src:/tmp/src
+  taskmanager-0:
+    image: stream-processing-with-pyflink:1.17.1
     command: taskmanager
-    container_name: taskmanager
+    container_name: taskmanager-0
     networks:
       - appnet
     volumes:
-      - flink_data:/tmp/
-      - ./:/etc/flink
+      - ./logs/flink/tm0:/opt/flink/temp
+      - ./src:/tmp/src
     environment:
       - BOOTSTRAP_SERVERS=kafka-0:9092
-      - RUNTIME_ENV=DOCKER
-      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-      # - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      - RUNTIME_ENV=docker
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 5
         state.backend: filesystem
         state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+    depends_on:
+      - jobmanager
+  taskmanager-1:
+    image: stream-processing-with-pyflink:1.17.1
+    command: taskmanager
+    container_name: taskmanager-1
+    networks:
+      - appnet
+    volumes:
+      - ./logs/flink/tm1:/opt/flink/temp
+      - ./src:/tmp/src
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-0:9092
+      - RUNTIME_ENV=docker
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 5
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
         heartbeat.interval: 1000
         heartbeat.timeout: 5000
     depends_on:
@@ -79,24 +99,21 @@ services:
       - KAFKA_CFG_LISTENERS=INTERNAL://:9092,EXTERNAL://:29092
       - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://localhost:29092
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
-      - KAFKA_CFG_NUM_PARTITIONS=5
-      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
     volumes:
       - kafka_0_data:/bitnami/kafka
     depends_on:
       - zookeeper
-  kpow:
-    image: factorhouse/kpow-ce:91.5.1
-    container_name: kpow
+  kafka-ui:
+    image: provectuslabs/kafka-ui:master
+    container_name: kafka-ui
     ports:
-      - "3000:3000"
+      - "8080:8080"
     networks:
       - appnet
     environment:
-      BOOTSTRAP: kafka-0:9092
-    env_file: # https://kpow.io/get-started/#individual
-      - ./kpow.env
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-0:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     depends_on:
       - zookeeper
       - kafka-0
@@ -112,6 +129,6 @@ volumes:
   kafka_0_data:
     driver: local
     name: kafka_0_data
-  flink_data:
+  prometheus_data:
     driver: local
-    name: flink_data
+    name: prometheus_data

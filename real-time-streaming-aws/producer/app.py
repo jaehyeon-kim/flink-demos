@@ -40,7 +40,8 @@ class TaxiRide:
             vendor_id=random.randint(1, 5),
             pickup_date=datetime.datetime.now().isoformat(timespec="milliseconds"),
             dropoff_date=(
-                datetime.datetime.now() + datetime.timedelta(minutes=random.randint(30, 100))
+                datetime.datetime.now()
+                + datetime.timedelta(minutes=random.randint(30, 100))
             ).isoformat(timespec="milliseconds"),
             passenger_count=random.randint(1, 9),
             pickup_longitude=pickup_lon,
@@ -90,8 +91,12 @@ class Producer:
     def create(self):
         kwargs = {
             "bootstrap_servers": self.bootstrap_servers,
-            "value_serializer": lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
-            "key_serializer": lambda v: json.dumps(v, default=self.serialize).encode("utf-8"),
+            "value_serializer": lambda v: json.dumps(v, default=self.serialize).encode(
+                "utf-8"
+            ),
+            "key_serializer": lambda v: json.dumps(v, default=self.serialize).encode(
+                "utf-8"
+            ),
             "api_version": (2, 8, 1),
         }
         if re.search("9098$", next(iter(self.bootstrap_servers))):
@@ -119,17 +124,19 @@ class Producer:
 
 def lambda_function(event, context):
     producer = Producer(
-        bootstrap_servers=os.environ["BOOTSTRAP_SERVERS"].split(","), topic=os.environ["TOPIC_NAME"]
+        bootstrap_servers=os.environ["BOOTSTRAP_SERVERS"].split(","),
+        topic=os.environ["TOPIC_NAME"],
     )
     s = datetime.datetime.now()
     total_records = 0
     while True:
-        items = TaxiRide.create(100)
+        items = TaxiRide.create(10)
         producer.send(items)
         total_records += len(items)
         print(f"sent {len(items)} messages")
         elapsed_sec = (datetime.datetime.now() - s).seconds
-        if elapsed_sec > int(os.environ["MAX_RUN_SEC"]):
+        max_run_sec = int(os.environ["MAX_RUN_SEC"])
+        if max_run_sec > 0 and elapsed_sec > int(os.environ["MAX_RUN_SEC"]):
             print(f"{total_records} records are sent in {elapsed_sec} seconds ...")
             break
         time.sleep(1)
@@ -138,5 +145,5 @@ def lambda_function(event, context):
 if __name__ == "__main__":
     os.environ["BOOTSTRAP_SERVERS"] = "localhost:29092"
     os.environ["TOPIC_NAME"] = "taxi-rides"
-    os.environ["MAX_RUN_SEC"] = "10"
+    os.environ["MAX_RUN_SEC"] = "-1"
     lambda_function({}, {})

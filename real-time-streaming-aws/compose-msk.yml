@@ -11,13 +11,14 @@ services:
       - appnet
     volumes:
       - ./loader:/etc/flink
+      - ./exporter:/etc/flink/exporter
       - ./package:/etc/package
     environment:
       - BOOTSTRAP_SERVERS=$BOOTSTRAP_SERVERS
       - RUNTIME_ENV=DOCKER
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      # - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
@@ -35,14 +36,13 @@ services:
       - appnet
     volumes:
       - flink_data:/tmp/
-      - ./loader:/etc/flink
-      - ./package:/etc/package
+      - ./:/etc/flink
     environment:
       - BOOTSTRAP_SERVERS=$BOOTSTRAP_SERVERS
       - RUNTIME_ENV=DOCKER
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-      - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+      # - AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
       - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
@@ -63,7 +63,7 @@ services:
     environment:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-      AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
+      # AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
       BOOTSTRAP: $BOOTSTRAP_SERVERS
       SECURITY_PROTOCOL: SASL_SSL
       SASL_MECHANISM: AWS_MSK_IAM
