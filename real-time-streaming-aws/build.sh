@@ -16,3 +16,7 @@ mvn clean install -f $SRC_PATH/lab2-pipeline/pom.xml \
 mvn clean install -f $SRC_PATH/lab3-pipeline/pom.xml \
   && mv $SRC_PATH/lab3-pipeline/target/lab3-pipeline-1.0.0.jar $SRC_PATH/lib \
   && rm -rf $SRC_PATH/lab3-pipeline/target
+
+mvn clean install -f $SRC_PATH/lab4-pipeline/pom.xml \
+  && mv $SRC_PATH/lab4-pipeline/target/lab4-pipeline-1.0.0.jar $SRC_PATH/lib \
+  && rm -rf $SRC_PATH/lab4-pipeline/target
