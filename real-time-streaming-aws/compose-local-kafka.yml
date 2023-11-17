@@ -13,6 +13,7 @@ services:
       - ./:/etc/flink
     environment:
       - BOOTSTRAP_SERVERS=kafka-0:9092
+      - OPENSEARCH_HOSTS=http://opensearch:9200
       - RUNTIME_ENV=DOCKER
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
@@ -37,6 +38,7 @@ services:
       - ./:/etc/flink
     environment:
       - BOOTSTRAP_SERVERS=kafka-0:9092
+      - OPENSEARCH_HOSTS=http://opensearch:9200
       - RUNTIME_ENV=DOCKER
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY

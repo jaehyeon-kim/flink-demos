@@ -4,7 +4,7 @@ SET 'state.checkpoints.dir' = 'file:///tmp/checkpoints/';
 SET 'execution.checkpointing.interval' = '60000';
 
 ADD JAR '/etc/lib/kafka-clients-3.2.3.jar';
-ADD JAR '/etc/package/lib/lab3-pipeline-1.0.0.jar';
+ADD JAR '/etc/flink/package/lib/lab3-pipeline-1.0.0.jar';
 
 CREATE TABLE taxi_rides_src (
     id                  VARCHAR,

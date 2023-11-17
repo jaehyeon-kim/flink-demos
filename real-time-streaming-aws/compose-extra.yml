@@ -1,0 +1,40 @@
+version: "3.5"
+
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2.7.0
+    container_name: opensearch
+    environment:
+      - discovery.type=single-node
+      - node.name=opensearch
+      - DISABLE_SECURITY_PLUGIN=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600
+    networks:
+      - appnet
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.7.0
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch:9200"]'
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: true
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    external: true
+    name: app-network
+
+volumes:
+  opensearch_data:
+    driver: local
+    name: opensearch_data
