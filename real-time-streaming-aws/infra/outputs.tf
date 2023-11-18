@@ -79,7 +79,7 @@ output "msk_bootstrap_brokers_sasl_iam" {
 }
 
 # Lambda Kafka producer
-output "kafka_lambda_arn" {
+output "kafka_producer_arn" {
   description = "Lambda Kafka producer ARN"
   value       = local.producer.to_create ? module.kafka_producer.lambda_function_arn : null
 }
@@ -116,4 +116,10 @@ output "taxi_rides_sink_version" {
 output "taxi_rides_table_arn" {
   description = "Amazon Resource Name (ARN) of the taxi rides"
   value       = local.connect.to_create ? aws_dynamodb_table.taxi_rides[0].arn : null
+}
+
+# Lambda Kafka Consumer
+output "kafka_consumer_arn" {
+  description = "Lambda Kafka producer ARN"
+  value       = local.consumer.to_create ? module.kafka_consumer.lambda_function_arn : null
 }
