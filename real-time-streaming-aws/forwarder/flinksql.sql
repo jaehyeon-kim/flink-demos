@@ -31,6 +31,7 @@ CREATE TABLE taxi_rides_src (
 );
 
 CREATE TABLE taxi_rides_sink (
+    vendor_id           VARCHAR, 
     trip_count          BIGINT NOT NULL,
     passenger_count     INT,
     trip_duration       INT,
@@ -44,6 +45,7 @@ CREATE TABLE taxi_rides_sink (
 
 INSERT INTO taxi_rides_sink
 SELECT 
+    CAST(vendor_id AS STRING) AS vendor_id,
     COUNT(id) AS trip_count,
     SUM(passenger_count) AS passenger_count,
     SUM(trip_duration) AS trip_duration,
@@ -51,4 +53,4 @@ SELECT
     window_end
 FROM TABLE(
    TUMBLE(TABLE taxi_rides_src, DESCRIPTOR(process_time), INTERVAL '5' SECONDS))
-GROUP BY window_start, window_end;
+GROUP BY vendor_id, window_start, window_end;

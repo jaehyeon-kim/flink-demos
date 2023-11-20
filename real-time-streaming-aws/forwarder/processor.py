@@ -11,7 +11,7 @@ OPENSEARCH_HOSTS = os.environ.get("OPENSEARCH_HOSTS")  # overwrite app config
 
 env = StreamExecutionEnvironment.get_execution_environment()
 env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
-env.enable_checkpointing(60000)
+env.enable_checkpointing(5000)
 
 if RUNTIME_ENV == "LOCAL":
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -103,6 +103,7 @@ def create_source_table(table_name: str, topic_name: str, bootstrap_servers: str
 def create_sink_table(table_name: str, os_hosts: str, os_index: str):
     stmt = f"""
     CREATE TABLE {table_name} (
+        vendor_id           VARCHAR,
         trip_count          BIGINT NOT NULL,
         passenger_count     INT,
         trip_duration       INT,
@@ -121,6 +122,7 @@ def create_sink_table(table_name: str, os_hosts: str, os_index: str):
 def create_print_table(table_name: str):
     stmt = f"""
     CREATE TABLE {table_name} (
+        vendor_id           VARCHAR,
         trip_count          BIGINT NOT NULL,
         passenger_count     INT,
         trip_duration       INT,
@@ -138,6 +140,7 @@ def set_insert_sql(source_table_name: str, sink_table_name: str):
     stmt = f"""
     INSERT INTO {sink_table_name}
     SELECT 
+        CAST(vendor_id AS STRING) AS vendor_id,
         COUNT(id) AS trip_count,
         SUM(passenger_count) AS passenger_count,
         SUM(trip_duration) AS trip_duration,
@@ -145,7 +148,7 @@ def set_insert_sql(source_table_name: str, sink_table_name: str):
         window_end
     FROM TABLE(
     TUMBLE(TABLE {source_table_name}, DESCRIPTOR(process_time), INTERVAL '5' SECONDS))
-    GROUP BY window_start, window_end
+    GROUP BY vendor_id, window_start, window_end
     """
     print(stmt)
     return stmt
