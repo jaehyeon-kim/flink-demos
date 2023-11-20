@@ -115,7 +115,7 @@ output "taxi_rides_sink_version" {
 # DynamoDB table
 output "taxi_rides_table_arn" {
   description = "Amazon Resource Name (ARN) of the taxi rides"
-  value       = local.connect.to_create ? aws_dynamodb_table.taxi_rides[0].arn : null
+  value       = aws_dynamodb_table.taxi_rides.arn
 }
 
 # Lambda Kafka Consumer

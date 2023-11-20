@@ -28,6 +28,22 @@ services:
       DISABLE_SECURITY_DASHBOARDS_PLUGIN: true
     networks:
       - appnet
+  kafka-connect:
+    image: bitnami/kafka:2.8.1
+    container_name: connect
+    command: >
+      /opt/bitnami/kafka/bin/connect-distributed.sh
+      /opt/bitnami/kafka/config/connect-distributed.properties
+    ports:
+      - "8083:8083"
+    networks:
+      - appnet
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+    volumes:
+      - "./configs/connect-distributed.properties:/opt/bitnami/kafka/config/connect-distributed.properties"
+      - "./infra/connectors/camel-aws-ddb-sink-kafka-connector:/opt/connectors/camel-aws-ddb-sink-kafka-connector"
 
 networks:
   appnet:

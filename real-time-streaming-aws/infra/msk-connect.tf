@@ -1,7 +1,5 @@
 # dynamodb table
 resource "aws_dynamodb_table" "taxi_rides" {
-  count = local.connect.to_create ? 1 : 0
-
   name           = "${local.name}-taxi-rides"
   billing_mode   = "PROVISIONED"
   read_capacity  = 1
@@ -41,7 +39,7 @@ resource "aws_mskconnect_connector" "taxi_rides_sink" {
     "value.converter.schemas.enable" = false,
     # camel ddb sink configuration
     "topics"                                                   = "taxi-rides",
-    "camel.kamelet.aws-ddb-sink.table"                         = aws_dynamodb_table.taxi_rides[0].id,
+    "camel.kamelet.aws-ddb-sink.table"                         = aws_dynamodb_table.taxi_rides.id,
     "camel.kamelet.aws-ddb-sink.region"                        = local.region,
     "camel.kamelet.aws-ddb-sink.operation"                     = "PutItem",
     "camel.kamelet.aws-ddb-sink.writeCapacity"                 = 1,
