@@ -143,3 +143,10 @@ resource "aws_cloudwatch_log_group" "opensearch_log_group_index_slow_logs" {
 
   tags = local.tags
 }
+
+resource "aws_iam_service_linked_role" "opensearch" {
+  count = data.aws_iam_role.opensearch_service_linked_role.id != "" ? 0 : 1
+
+  aws_service_name = "opensearchservice.amazonaws.com"
+  description      = "Allows Amazon OpenSearch to manage AWS resources for a domain on your behalf."
+}

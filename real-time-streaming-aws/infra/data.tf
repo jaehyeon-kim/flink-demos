@@ -26,3 +26,7 @@ data "aws_ami" "amazon_linux_2" {
     values = ["amzn2-ami-hvm-*-x86_64-ebs"]
   }
 }
+
+data "aws_iam_role" "opensearch_service_linked_role" {
+  name = "AWSServiceRoleForAmazonOpenSearchService"
+}

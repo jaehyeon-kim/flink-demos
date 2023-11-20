@@ -95,7 +95,7 @@ locals {
     src_path          = "../consumer"
     function_name     = "kafka_consumer"
     handler           = "app.lambda_function"
-    timeout           = 90
+    timeout           = 600
     memory_size       = 128
     runtime           = "python3.8"
     topic_name        = "taxi-rides"

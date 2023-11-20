@@ -10,9 +10,7 @@ services:
     networks:
       - appnet
     volumes:
-      - ./loader:/etc/flink
-      - ./exporter:/etc/flink/exporter
-      - ./package:/etc/package
+      - ./:/etc/flink
     environment:
       - BOOTSTRAP_SERVERS=${BOOTSTRAP_SERVERS:-not_set}
       - OPENSEARCH_HOSTS=${OPENSEARCH_HOSTS:-not_set}
