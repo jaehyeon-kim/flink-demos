@@ -1,0 +1,19 @@
+{
+  "name": "real-time-streaming-taxi-rides-sink",
+  "config": {
+    "connector.class": "org.apache.camel.kafkaconnector.awsddbsink.CamelAwsddbsinkSinkConnector",
+    "tasks.max": "1",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter.schemas.enable": false,
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": false,
+    "topics": "taxi-rides",
+
+    "camel.kamelet.aws-ddb-sink.table": "real-time-streaming-taxi-rides",
+    "camel.kamelet.aws-ddb-sink.region": "ap-southeast-2",
+    "camel.kamelet.aws-ddb-sink.operation": "PutItem",
+    "camel.kamelet.aws-ddb-sink.writeCapacity": 1,
+    "camel.kamelet.aws-ddb-sink.useDefaultCredentialsProvider": true,
+    "camel.sink.unmarshal": "jackson"
+  }
+}

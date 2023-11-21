@@ -10,11 +10,10 @@ services:
     networks:
       - appnet
     volumes:
-      - ./loader:/etc/flink
-      - ./exporter:/etc/flink/exporter
-      - ./package:/etc/package
+      - ./:/etc/flink
     environment:
-      - BOOTSTRAP_SERVERS=$BOOTSTRAP_SERVERS
+      - BOOTSTRAP_SERVERS=${BOOTSTRAP_SERVERS:-not_set}
+      - OPENSEARCH_HOSTS=${OPENSEARCH_HOSTS:-not_set}
       - RUNTIME_ENV=DOCKER
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
@@ -38,7 +37,8 @@ services:
       - flink_data:/tmp/
       - ./:/etc/flink
     environment:
-      - BOOTSTRAP_SERVERS=$BOOTSTRAP_SERVERS
+      - BOOTSTRAP_SERVERS=${BOOTSTRAP_SERVERS:-not_set}
+      - OPENSEARCH_HOSTS=${OPENSEARCH_HOSTS:-not_set}
       - RUNTIME_ENV=DOCKER
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
@@ -64,7 +64,7 @@ services:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       # AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
-      BOOTSTRAP: $BOOTSTRAP_SERVERS
+      BOOTSTRAP: ${BOOTSTRAP_SERVERS:-not_set}
       SECURITY_PROTOCOL: SASL_SSL
       SASL_MECHANISM: AWS_MSK_IAM
       SASL_JAAS_CONFIG: software.amazon.msk.auth.iam.IAMLoginModule required;

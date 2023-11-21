@@ -79,8 +79,47 @@ output "msk_bootstrap_brokers_sasl_iam" {
 }
 
 # Lambda Kafka producer
-output "kafka_lambda_arn" {
+output "kafka_producer_arn" {
   description = "Lambda Kafka producer ARN"
   value       = local.producer.to_create ? module.kafka_producer.lambda_function_arn : null
 }
 
+# OpenSearch
+
+output "opensearch_domain_arn" {
+  description = "OpenSearch domain ARN"
+  value       = local.producer.to_create ? aws_opensearch_domain.opensearch[0].arn : null
+}
+
+output "opensearch_domain_endpoint" {
+  description = "OpenSearch domain endpoint"
+  value       = local.producer.to_create ? aws_opensearch_domain.opensearch[0].endpoint : null
+}
+
+output "opensearch_domain_dashboard_endpoint" {
+  description = "OpenSearch domain dashboard endpoint"
+  value       = local.producer.to_create ? aws_opensearch_domain.opensearch[0].dashboard_endpoint : null
+}
+
+# MSK Connect
+output "taxi_rides_sink_arn" {
+  description = "Amazon Resource Name (ARN) of the Camel DyanmoDB Sink connector"
+  value       = local.connect.to_create ? aws_mskconnect_connector.taxi_rides_sink[0].arn : null
+}
+
+output "taxi_rides_sink_version" {
+  description = "Current version of the Camel DyanmoDB Sink connector"
+  value       = local.connect.to_create ? aws_mskconnect_connector.taxi_rides_sink[0].version : null
+}
+
+# DynamoDB table
+output "taxi_rides_table_arn" {
+  description = "Amazon Resource Name (ARN) of the taxi rides"
+  value       = aws_dynamodb_table.taxi_rides.arn
+}
+
+# Lambda Kafka Consumer
+output "kafka_consumer_arn" {
+  description = "Lambda Kafka producer ARN"
+  value       = local.consumer.to_create ? module.kafka_consumer.lambda_function_arn : null
+}

@@ -4,15 +4,14 @@ import json
 
 from pyflink.datastream import StreamExecutionEnvironment, RuntimeExecutionMode
 from pyflink.table import StreamTableEnvironment
-from pyflink.table.udf import udf
 
 RUNTIME_ENV = os.environ.get("RUNTIME_ENV", "LOCAL")  # LOCAL or DOCKER
 BOOTSTRAP_SERVERS = os.environ.get("BOOTSTRAP_SERVERS")  # overwrite app config
-
+OPENSEARCH_HOSTS = os.environ.get("OPENSEARCH_HOSTS")  # overwrite app config
 
 env = StreamExecutionEnvironment.get_execution_environment()
 env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
-env.enable_checkpointing(60000)
+env.enable_checkpointing(5000)
 
 if RUNTIME_ENV == "LOCAL":
     CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -20,19 +19,18 @@ if RUNTIME_ENV == "LOCAL":
     APPLICATION_PROPERTIES_FILE_PATH = os.path.join(
         CURRENT_DIR, "application_properties.json"
     )
-    JAR_FILES = ["lab3-pipeline-1.0.0.jar"]
+    JAR_FILES = ["lab4-pipeline-1.0.0.jar"]
     JAR_PATHS = tuple(
         [f"file://{os.path.join(PARENT_DIR, 'jars', name)}" for name in JAR_FILES]
     )
     print(JAR_PATHS)
     env.add_jars(*JAR_PATHS)
 else:
-    APPLICATION_PROPERTIES_FILE_PATH = "/etc/flink/exporter/application_properties.json"
+    APPLICATION_PROPERTIES_FILE_PATH = (
+        "/etc/flink/forwarder/application_properties.json"
+    )
 
 table_env = StreamTableEnvironment.create(stream_execution_environment=env)
-table_env.create_temporary_function(
-    "add_source", udf(lambda: "NYCTAXI", result_type="STRING")
-)
 
 
 def get_application_properties():
@@ -82,34 +80,7 @@ def create_source_table(table_name: str, topic_name: str, bootstrap_servers: str
         id                  VARCHAR,
         vendor_id           INT,
         pickup_date         VARCHAR,
-        pickup_datetime     AS TO_TIMESTAMP(REPLACE(pickup_date, 'T', ' ')),
         dropoff_date        VARCHAR,
-        dropoff_datetime    AS TO_TIMESTAMP(REPLACE(dropoff_date, 'T', ' ')),
-        passenger_count     INT,
-        pickup_longitude    VARCHAR,
-        pickup_latitude     VARCHAR,
-        dropoff_longitude   VARCHAR,
-        dropoff_latitude    VARCHAR,
-        store_and_fwd_flag  VARCHAR,
-        gc_distance         INT,
-        trip_duration       INT,
-        google_distance     INT,
-        google_duration     INT
-    ) WITH (
-        {inject_security_opts(opts, bootstrap_servers)}
-    )
-    """
-    print(stmt)
-    return stmt
-
-
-def create_sink_table(table_name: str, file_path: str):
-    stmt = f"""
-    CREATE TABLE {table_name} (
-        id                  VARCHAR,
-        vendor_id           INT,
-        pickup_datetime     TIMESTAMP,
-        dropoff_datetime    TIMESTAMP,
         passenger_count     INT,
         pickup_longitude    VARCHAR,
         pickup_latitude     VARCHAR,
@@ -120,17 +91,28 @@ def create_sink_table(table_name: str, file_path: str):
         trip_duration       INT,
         google_distance     INT,
         google_duration     INT,
-        source              VARCHAR,
-        `year`              VARCHAR,
-        `month`             VARCHAR,
-        `date`              VARCHAR,
-        `hour`              VARCHAR
-    ) PARTITIONED BY (`year`, `month`, `date`, `hour`) WITH (
-        'connector'= 'filesystem',
-        'path' = '{file_path}',
-        'format' = 'parquet',
-        'sink.partition-commit.delay'='1 h',
-        'sink.partition-commit.policy.kind'='success-file'
+        process_time        AS PROCTIME()
+    ) WITH (
+        {inject_security_opts(opts, bootstrap_servers)}
+    )
+    """
+    print(stmt)
+    return stmt
+
+
+def create_sink_table(table_name: str, os_hosts: str, os_index: str):
+    stmt = f"""
+    CREATE TABLE {table_name} (
+        vendor_id           VARCHAR,
+        trip_count          BIGINT NOT NULL,
+        passenger_count     INT,
+        trip_duration       INT,
+        window_start        TIMESTAMP(3) NOT NULL,
+        window_end          TIMESTAMP(3) NOT NULL
+    ) WITH (
+        'connector'= 'opensearch',
+        'hosts' = '{os_hosts}',
+        'index' = '{os_index}'
     )
     """
     print(stmt)
@@ -140,25 +122,12 @@ def create_sink_table(table_name: str, file_path: str):
 def create_print_table(table_name: str):
     stmt = f"""
     CREATE TABLE {table_name} (
-        id                  VARCHAR,
-        vendor_id           INT,
-        pickup_datetime     TIMESTAMP,
-        dropoff_datetime    TIMESTAMP,
+        vendor_id           VARCHAR,
+        trip_count          BIGINT NOT NULL,
         passenger_count     INT,
-        pickup_longitude    VARCHAR,
-        pickup_latitude     VARCHAR,
-        dropoff_longitude   VARCHAR,
-        dropoff_latitude    VARCHAR,
-        store_and_fwd_flag  VARCHAR,
-        gc_distance         INT,
         trip_duration       INT,
-        google_distance     INT,
-        google_duration     INT,
-        source              VARCHAR,
-        `year`              VARCHAR,
-        `month`             VARCHAR,
-        `date`              VARCHAR,
-        `hour`              VARCHAR
+        window_start        TIMESTAMP(3) NOT NULL,
+        window_end          TIMESTAMP(3) NOT NULL
     ) WITH (
         'connector'= 'print'
     )
@@ -170,27 +139,16 @@ def create_print_table(table_name: str):
 def set_insert_sql(source_table_name: str, sink_table_name: str):
     stmt = f"""
     INSERT INTO {sink_table_name}
-    SELECT
-        id,
-        vendor_id,
-        pickup_datetime,
-        dropoff_datetime,
-        passenger_count,
-        pickup_longitude,
-        pickup_latitude,
-        dropoff_longitude,
-        dropoff_latitude,
-        store_and_fwd_flag,
-        gc_distance,
-        trip_duration,
-        google_distance,
-        google_duration,
-        add_source() AS source,
-        DATE_FORMAT(pickup_datetime, 'yyyy') AS `year`,
-        DATE_FORMAT(pickup_datetime, 'MM') AS `month`,
-        DATE_FORMAT(pickup_datetime, 'dd') AS `date`,
-        DATE_FORMAT(pickup_datetime, 'HH') AS `hour`
-    FROM {source_table_name}
+    SELECT 
+        CAST(vendor_id AS STRING) AS vendor_id,
+        COUNT(id) AS trip_count,
+        SUM(passenger_count) AS passenger_count,
+        SUM(trip_duration) AS trip_duration,
+        window_start,
+        window_end
+    FROM TABLE(
+    TUMBLE(TABLE {source_table_name}, DESCRIPTOR(process_time), INTERVAL '5' SECONDS))
+    GROUP BY vendor_id, window_start, window_end
     """
     print(stmt)
     return stmt
@@ -215,7 +173,8 @@ def main():
     print(">> sink properties")
     print(sink_properties)
     sink_table_name = sink_properties["table.name"]
-    sink_file_path = sink_properties["file.path"]
+    sink_os_hosts = OPENSEARCH_HOSTS or sink_properties["os_hosts"]
+    sink_os_index = sink_properties["os_index"]
     ## print
     print_table_name = "sink_print"
     #### create tables
@@ -224,7 +183,9 @@ def main():
             source_table_name, source_topic_name, source_bootstrap_servers
         )
     )
-    table_env.execute_sql(create_sink_table(sink_table_name, sink_file_path))
+    table_env.execute_sql(
+        create_sink_table(sink_table_name, sink_os_hosts, sink_os_index)
+    )
     table_env.execute_sql(create_print_table(print_table_name))
     #### insert into sink tables
     if RUNTIME_ENV == "LOCAL":
@@ -242,8 +203,8 @@ def main():
 if __name__ == "__main__":
     """
     docker exec jobmanager /opt/flink/bin/flink run \
-        --python /etc/flink/exporter/processor.py \
-        --jarfile /etc/flink/package/lib/lab3-pipeline-1.0.0.jar \
+        --python /etc/flink/forwarder/processor.py \
+        --jarfile /etc/flink/package/lib/lab4-pipeline-1.0.0.jar \
         -d
     """
     main()

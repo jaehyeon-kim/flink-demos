@@ -1,0 +1,25 @@
+[
+  {
+    "PropertyGroupId": "kinesis.analytics.flink.run.options",
+    "PropertyMap": {
+      "python": "processor.py",
+      "jarfile": "package/lib/lab3-pipeline-1.0.0.jar"
+    }
+  },
+  {
+    "PropertyGroupId": "source.config.0",
+    "PropertyMap": {
+      "table.name": "taxi_rides_src",
+      "topic.name": "taxi-rides",
+      "bootstrap.servers": "localhost:29092"
+    }
+  },
+  {
+    "PropertyGroupId": "sink.config.0",
+    "PropertyMap": {
+      "table.name": "trip_stats_sink",
+      "os_hosts": "http://opensearch:9200",
+      "os_index": "trip_stats"
+    }
+  }
+]

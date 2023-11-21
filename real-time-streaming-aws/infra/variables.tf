@@ -10,6 +10,24 @@ variable "producer_to_create" {
   default     = false
 }
 
+variable "opensearch_to_create" {
+  description = "Flag to indicate whether to create OpenSearch cluster"
+  type        = bool
+  default     = false
+}
+
+variable "connect_to_create" {
+  description = "Flag to indicate whether to create Kafka connector"
+  type        = bool
+  default     = false
+}
+
+variable "consumer_to_create" {
+  description = "Flag to indicate whether to create Kafka consumer"
+  type        = bool
+  default     = false
+}
+
 locals {
   name        = "real-time-streaming"
   region      = data.aws_region.current.name
@@ -59,6 +77,29 @@ locals {
       topic_name  = "taxi-rides"
       max_run_sec = 60
     }
+  }
+
+  opensearch = {
+    to_create      = var.opensearch_to_create
+    engine_version = "2.7"
+    instance_type  = "m5.large.search"
+    instance_count = 2
+  }
+
+  connect = {
+    to_create = var.connect_to_create
+  }
+
+  consumer = {
+    to_create         = var.consumer_to_create
+    src_path          = "../consumer"
+    function_name     = "kafka_consumer"
+    handler           = "app.lambda_function"
+    timeout           = 600
+    memory_size       = 128
+    runtime           = "python3.8"
+    topic_name        = "taxi-rides"
+    starting_position = "TRIM_HORIZON"
   }
 
   tags = {
