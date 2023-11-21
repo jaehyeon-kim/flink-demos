@@ -3,7 +3,7 @@
     "PropertyGroupId": "kinesis.analytics.flink.run.options",
     "PropertyMap": {
       "python": "processor.py",
-      "jarfile": "package/lib/lab3-pipeline-1.0.0.jar"
+      "jarfile": "package/lib/lab4-pipeline-1.0.0.jar"
     }
   },
   {
