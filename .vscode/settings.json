@@ -5,15 +5,10 @@
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.tabSize": 2,
-  "python.linting.pylintEnabled": false,
-  "python.linting.flake8Enabled": false,
-  "python.linting.enabled": false,
-  "python.formatting.provider": "none",
-  "python.formatting.blackPath": "black",
-  "python.formatting.blackArgs": ["--line-length", "100"],
   "[python]": {
     "editor.tabSize": 4,
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform",
@@ -27,6 +22,32 @@
     "editor.formatOnSave": false,
     "editor.codeActionsOnSave": {
       "source.formatAll.terraform": true
+    }
+  },
+  "yaml.customTags": [
+    "!Base64 scalar",
+    "!Cidr scalar",
+    "!And sequence",
+    "!Equals sequence",
+    "!If sequence",
+    "!Not sequence",
+    "!Or sequence",
+    "!Condition scalar",
+    "!FindInMap sequence",
+    "!GetAtt scalar",
+    "!GetAtt sequence",
+    "!GetAZs scalar",
+    "!ImportValue scalar",
+    "!Join sequence",
+    "!Select sequence",
+    "!Split sequence",
+    "!Sub scalar",
+    "!Transform mapping",
+    "!Ref scalar"
+  ],
+  "[terraform][terraform-vars]": {
+    "editor.codeActionsOnSave": {
+      "source.formatAll.terraform": "explicit"
     }
   }
 }
