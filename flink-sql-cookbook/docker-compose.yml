@@ -1,0 +1,95 @@
+version: "3"
+
+services:
+  jobmanager:
+    image: flink-sql-cookbook
+    build: .
+    command: jobmanager
+    container_name: jobmanager
+    ports:
+      - "8081:8081"
+    networks:
+      - cookbook
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+        rest.flamegraph.enabled: true
+        web.backpressure.refresh-interval: 10000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/config"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  taskmanager-1:
+    image: flink-sql-cookbook
+    build: .
+    command: taskmanager
+    container_name: taskmanager-1
+    networks:
+      - cookbook
+    depends_on:
+      jobmanager:
+        condition: service_healthy
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 10
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+
+  taskmanager-2:
+    image: flink-sql-cookbook
+    build: .
+    command: taskmanager
+    container_name: taskmanager-2
+    networks:
+      - cookbook
+    depends_on:
+      jobmanager:
+        condition: service_healthy
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 10
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+
+  taskmanager-3:
+    image: flink-sql-cookbook
+    build: .
+    command: taskmanager
+    container_name: taskmanager-3
+    networks:
+      - cookbook
+    depends_on:
+      jobmanager:
+        condition: service_healthy
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 10
+        state.backend: filesystem
+        state.checkpoints.dir: file:///tmp/flink-checkpoints
+        state.savepoints.dir: file:///tmp/flink-savepoints
+        heartbeat.interval: 1000
+        heartbeat.timeout: 5000
+
+networks:
+  cookbook:
+    name: flink-sql-cookbook
