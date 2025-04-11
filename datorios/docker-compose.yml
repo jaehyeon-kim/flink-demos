@@ -1,0 +1,57 @@
+version: '3.7'
+services:
+  jobmanager:
+    image: localhost/metro-flink:1.17.2
+    pull_policy: never
+    command: jobmanager
+    container_name: datorios-${CLUSTER_NAME}-jobmanager
+    volumes:
+      - ${MOUNT_SRC_PATH}:${MOUNT_DST_PATH}
+    ports:
+      - "${CLUSTER_JOB_MANAGER_PORT}:8081"
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+  taskmanager:
+    image: localhost/metro-flink:1.17.2
+    pull_policy: never
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    volumes:
+      - ${MOUNT_SRC_PATH}:${MOUNT_DST_PATH}
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.memory.task.off-heap.size: 128mb
+  runner:
+    image: localhost/metro-flink-runner:1.17.2
+    pull_policy: never
+    depends_on:
+      - jobmanager
+      - taskmanager
+      - fluent-bit
+    tty: true
+    container_name: datorios-${CLUSTER_NAME}-runner
+    volumes:
+      - ${MOUNT_SRC_PATH}:${MOUNT_DST_PATH}
+    env_file:
+      - .env
+    environment:
+      - CLUSTER_NAME=${CLUSTER_NAME}
+  fluent-bit:
+    image: localhost/metro-fluent-bit:2.2.2
+    pull_policy: never
+    depends_on:
+      - jobmanager
+      - taskmanager
+    command: /opt/fluent-bit/bin/fluent-bit -c /fluent-bit/config.conf
+    container_name: datorios-${CLUSTER_NAME}-fluent-bit
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    env_file:
+      - .env
+    environment:
+      - CLUSTER_NAME=${CLUSTER_NAME}
