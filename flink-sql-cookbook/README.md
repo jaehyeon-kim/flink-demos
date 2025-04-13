@@ -4,13 +4,25 @@ A Flink cluster that can be used to run queries of the [Apache Flink SQL Cookboo
 
 The Flink Docker image is updated with the [Flink SQL Faker Connector](https://github.com/knaufk/flink-faker) for fake data generation. Note that the example SQL queries are based on an old version of the connector, and some of them have to be modified.
 
-### Deploy a Flink Cluster
+### Flink Cluster on Docker
+
+The cookbook generates sample records using the [Flink SQL Faker Connector](https://github.com/knaufk/flink-faker), and we use a custom Docker image that downloads its source to the `/opt/flink/lib/` folder. In this way, we don't have to specify the connector source whenever we start the [SQL client](https://nightlies.apache.org/flink/flink-docs-master/docs/dev/table/sqlclient/).
+
+```Dockerfile
+FROM flink:1.20.1
+
+# add faker connector
+RUN wget -P /opt/flink/lib/ \
+  https://github.com/knaufk/flink-faker/releases/download/v0.5.3/flink-faker-0.5.3.jar
+```
+
+A local Apache Flink cluster can be deployed using Docker Compose.
 
 ```bash
-# start services
+# start containers
 $ docker compose up -d
 
-# list services
+# list containers
 $ docker-compose ps
 # NAME                COMMAND                  SERVICE             STATUS              PORTS
 # jobmanager          "/docker-entrypoint.…"   jobmanager          running (healthy)   6123/tcp, 0.0.0.0:8081->8081/tcp, :::8081->8081/tcp
@@ -19,19 +31,10 @@ $ docker-compose ps
 # taskmanager-3       "/docker-entrypoint.…"   taskmanager-3       running             6123/tcp, 8081/tcp
 ```
 
-### Start a SQL Client
-
-```bash
-$ docker exec -it jobmanager /opt/flink/bin/sql-client.sh
-```
-
-![sql-client](./img/sql-client.png)
-
-### Run a Query
-
-**Create a temporary table**
+### Flink SQL Client
 
 ```sql
+-- // create a temporary table
 CREATE TEMPORARY TABLE heros (
   `name` STRING,
   `power` STRING,
@@ -44,11 +47,8 @@ CREATE TEMPORARY TABLE heros (
   'fields.age.expression' = '#{number.numberBetween ''0'',''1000''}'
 );
 -- [INFO] Execute statement succeeded.
-```
 
-**Check the new table**
-
-```sql
+-- list tables
 SHOW TABLES;
 -- +------------+
 -- | table name |
@@ -56,18 +56,13 @@ SHOW TABLES;
 -- |      heros |
 -- +------------+
 -- 1 row in set
-```
 
-**Query the new table**
-
-```sql
+-- query records from the heros table
+-- hit 'q' to exit the record view
 SELECT * FROM heros;
-```
 
-![query-result](./img/query-result.png)
-
-**Stop the SQL client**
-
-```sql
+-- quit sql shell
 quit;
 ```
+
+![](./img/sql-client.gif#center)
