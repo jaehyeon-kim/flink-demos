@@ -1,4 +1,4 @@
-package me.jaehyeon.util
+package me.jaehyeon.sensor
 
 import org.apache.flink.api.connector.source.Boundedness
 import org.apache.flink.api.connector.source.Source

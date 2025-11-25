@@ -1,4 +1,4 @@
-package me.jaehyeon.util
+package me.jaehyeon.sensor
 
 import java.io.Serializable
 

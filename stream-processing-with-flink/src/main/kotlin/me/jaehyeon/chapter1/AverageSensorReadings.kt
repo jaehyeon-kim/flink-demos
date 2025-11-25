@@ -1,7 +1,7 @@
 package me.jaehyeon.chapter1
 
-import me.jaehyeon.util.SensorReading
-import me.jaehyeon.util.SensorSource
+import me.jaehyeon.sensor.SensorReading
+import me.jaehyeon.sensor.SensorSource
 import org.apache.flink.api.common.eventtime.WatermarkStrategy
 import org.apache.flink.api.common.functions.AggregateFunction
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
