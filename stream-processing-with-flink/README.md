@@ -21,6 +21,12 @@ Use the `run` task and specify which main class you want to execute using the `-
 ```bash
 # Run the example from Chapter 1
 ./gradlew run -PmainClass=me.jaehyeon.chapter1.AverageSensorReadings
+
+# Run the examples from Chapter 5
+./gradlew run -PmainClass=me.jaehyeon.chapter5.BasicTransformations
+./gradlew run -PmainClass=me.jaehyeon.chapter5.KeyedTransformations
+./gradlew run -PmainClass=me.jaehyeon.chapter5.RollingSum
+./gradlew run -PmainClass=me.jaehyeon.chapter5.MultiStreamTransformations
 ```
 
 ## Running Tests
