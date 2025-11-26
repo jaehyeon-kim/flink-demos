@@ -11,6 +11,24 @@ import org.apache.flink.streaming.api.functions.co.CoFlatMapFunction
 import org.apache.flink.util.Collector
 import java.time.Duration
 
+/**
+ * This Flink job demonstrates how to combine two different streams to perform more
+ * complex logic, implementing a classic "Broadcast State" pattern.
+ *
+ * The goal is to issue a fire `Alert` only when two conditions are met: a high smoke
+ * level is detected system-wide, AND a sensor's temperature reading is dangerously high.
+ *
+ * The pipeline works as follows:
+ * 1. **Sensor Stream**: A high-volume, parallel stream of `SensorReading` events, keyed by sensor ID.
+ * 2. **Smoke Stream**: A low-volume, non-parallel "control" stream of `SmokeLevel` events (`High` or `Low`).
+ * 3. **Connect & Broadcast**: The smoke stream is broadcast to every parallel instance of the
+ *    downstream operator. This ensures all tasks processing sensor readings know the current smoke level.
+ * 4. **CoFlatMapFunction**: A custom function (`RaiseAlertFlatMap`) processes both streams.
+ *    - It uses the smoke stream to update its internal state (the current smoke level).
+ *    - It uses the sensor stream to check temperatures against the current smoke level state and
+ *      emits an `Alert` if the conditions for a fire risk are met.
+ * 5. **Sink**: Prints the resulting `Alert` stream to the console.
+ */
 object MultiStreamTransformations {
     @JvmStatic
     fun main(args: Array<String>) {

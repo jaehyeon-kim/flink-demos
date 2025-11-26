@@ -8,6 +8,18 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
 import org.apache.flink.util.Collector
 import java.time.Duration
 
+/**
+ * This Flink job demonstrates basic, non-keyed transformations on a DataStream.
+ *
+ * It showcases a simple pipeline:
+ * 1. **Source**: Ingests a stream of `SensorReading` events from a custom source.
+ * 2. **Filter**: Discards readings with a temperature below 25.
+ * 3. **Map**: Transforms the remaining `SensorReading` objects into just their String IDs.
+ * 4. **FlatMap**: Splits each String ID into its constituent parts (e.g., "sensor_1" -> "sensor", "1").
+ * 5. **Sink**: Prints the final stream of ID parts to the console.
+ *
+ * This example highlights stateless, one-to-one (map, filter) and one-to-many (flatMap) transformations.
+ */
 object BasicTransformations {
     @JvmStatic
     fun main(args: Array<String>) {

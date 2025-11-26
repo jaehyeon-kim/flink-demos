@@ -6,6 +6,21 @@ import org.apache.flink.api.common.eventtime.WatermarkStrategy
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
 import java.time.Duration
 
+/**
+ * This Flink job demonstrates transformations on a `KeyedStream`.
+ *
+ * It showcases the `reduce` operator, a powerful tool for maintaining running aggregates
+ * for each key in a stream.
+ *
+ * The pipeline is as follows:
+ * 1. **Source**: Ingests a stream of `SensorReading` events.
+ * 2. **KeyBy**: Partitions the stream by the `id` of each sensor. All subsequent
+ *    operations will run independently for each sensor.
+ * 3. **Reduce**: For each key, this operator maintains a running state of the `SensorReading`
+ *    with the maximum temperature seen so far. For every new reading that arrives, it
+ *    compares it to the current maximum and emits the new maximum downstream.
+ * 4. **Sink**: Prints the continuous stream of running maximums for each sensor to the console.
+ */
 object KeyedTransformations {
     @JvmStatic
     fun main(args: Array<String>) {
