@@ -1,6 +1,6 @@
 # Stream Processing with Flink (Kotlin Examples)
 
-This project contains Kotlin implementations of examples for learning Apache Flink, inspired by the [`streaming-with-flink` Scala](<(https://github.com/streaming-with-flink/examples-scala)>) project.
+This project contains Kotlin implementations of examples for learning Apache Flink, inspired by the [`streaming-with-flink` Scala](https://github.com/streaming-with-flink/examples-scala) project.
 
 ## Building the Project
 
@@ -27,6 +27,12 @@ Use the `run` task and specify which main class you want to execute using the `-
 ./gradlew run -PmainClass=me.jaehyeon.chapter5.KeyedTransformations
 ./gradlew run -PmainClass=me.jaehyeon.chapter5.RollingSum
 ./gradlew run -PmainClass=me.jaehyeon.chapter5.MultiStreamTransformations
+
+# Run the examples from Chapter 6
+./gradlew run -PmainClass=me.jaehyeon.chapter6.ProcessFunctionTimers
+./gradlew run -PmainClass=me.jaehyeon.chapter6.PeriodicWatermarkGeneration
+./gradlew run -PmainClass=me.jaehyeon.chapter6.MarkerBasedWatermarkGeneration
+./gradlew run -PmainClass=me.jaehyeon.chapter6.CoProcessFunctionTimers
 ```
 
 ## Running Tests
