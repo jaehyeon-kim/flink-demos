@@ -160,3 +160,363 @@ Flink provides several variants of the `ProcessFunction` to match different stre
 - **`ProcessWindowFunction`**: Used on a `WindowedStream`. Its `process` method is called once per window and receives an `Iterable` of all elements. It has access to per-window state but **no `TimerService`**.
 
 - **`BroadcastProcessFunction` & `KeyedBroadcastProcessFunction`**: Specialized functions for the Broadcast State Pattern. They process a regular stream and a broadcast stream, allowing the broadcast stream to update a special "broadcast state" that is replicated to all parallel instances.
+
+## States
+
+Flink provides a rich set of state primitives that are checkpointed and managed by the runtime. They are broadly categorized into **Keyed State** and **Operator State**.
+
+### 1. Keyed State
+
+This is the most common type of state. It is scoped to a specific key within a `KeyedStream` and can only be used in functions applied to a `KeyedStream` (like a `KeyedProcessFunction`).
+
+---
+
+#### **`ValueState<T>`**
+
+- **Data Structure:** Holds a single, updatable value of type `T`.
+- **Use Case:** The workhorse for most stateful logic. Perfect for storing the "last seen" event, a running count, a state machine's current state, or the timestamp of a registered timer.
+- **Key Methods:** `value()` to get, `update(T)` to set/overwrite.
+
+---
+
+#### **`ListState<T>`**
+
+- **Data Structure:** Holds a `List` of elements of type `T`.
+- **Use Case:** Buffering or collecting a list of events for a key that need to be processed together later (e.g., when a timer fires).
+- **Key Methods:** `add(T)` to add one element, `addAll(List<T>)` to add multiple, `get()` to retrieve an `Iterable<T>`, and `clear()`.
+
+---
+
+#### **`MapState<K, V>`**
+
+- **Data Structure:** Holds a `Map` of key-value pairs.
+- **Use Case:** The most flexible state primitive. Ideal for complex aggregations or when you need to manage multiple attributes per key. For example, counting occurrences of different sub-categories for a given user key.
+- **Key Methods:** `get(K)`, `put(K, V)`, `contains(K)`, `remove(K)`, `entries()`, `keys()`, `values()`.
+
+---
+
+#### **`ReducingState<T>`**
+
+- **Data Structure:** Holds a single value of type `T`, similar to `ValueState`, but with a built-in aggregation mechanism.
+- **How it Works:** You provide a `ReduceFunction` when you create it. Every time you add a new element, the state automatically combines the new element with the current value using your function.
+- **Use Case:** Efficiently implementing simple, continuous aggregations like a rolling sum, min, or max, without the manual `get-update-write` pattern of `ValueState`.
+- **Key Methods:** `add(T)` to add and reduce, `get()` to retrieve the current aggregated value.
+
+---
+
+#### **`AggregatingState<IN, OUT>`**
+
+- **Data Structure:** The most general aggregation state. Holds a single value that is the result of an aggregation.
+- **How it Works:** You provide a full `AggregateFunction`, which can have different input, accumulator, and output types.
+- **Use Case:** For complex aggregations where the intermediate state (accumulator) is different from the input or output types. The canonical example is calculating an average, where the accumulator is a `(sum, count)` pair.
+- **Key Methods:** `add(IN)` to add an element to the aggregation, `get()` to retrieve the final result.
+
+### 2. Operator State
+
+This state is scoped to a parallel operator instance, not a key. It is most commonly used in sources and sinks.
+
+- **`ListState<T>`**: The most common type. The state is a list of elements. When parallelism changes, Flink can redistribute the state from the old instances' lists to the new instances. A classic example is a Kafka source, where each parallel instance uses `ListState` to store the topic partition offsets it is responsible for.
+- **`BroadcastState<K, V>`**: A special type of operator state used in the Broadcast State Pattern. It is a `Map` whose contents are identical across all parallel instances of an operator. It is used to broadcast a low-volume stream of control data (e.g., rules) to all tasks.
+
+This is a comprehensive, deep-dive reference guide to **Flink Window Operators**. It details the APIs, internal mechanisms, interfaces, and provides Kotlin code snippets for implementing custom logic.
+
+---
+
+## Window Operators
+
+Windows bucket infinite streams into finite chunks for computation.
+
+### 1. Stream Types & Keying
+
+The foundation of windowing is whether the stream is partitioned.
+
+#### Keyed Windows (Recommended)
+
+Calculations are parallelized. Each logical key has its own independent window state.
+
+```kotlin
+// IN: DataStream<MyEvent>
+stream
+    .keyBy { it.userId }       // KeyedStream<MyEvent, String>
+    .window(...)               // WindowedStream<MyEvent, String, Window>
+```
+
+#### Non-Keyed Windows (Bottleneck)
+
+All data flows to a single task (parallelism = 1). Use only for global aggregations (e.g., "Total users in system").
+
+```kotlin
+stream.windowAll(...)          // AllWindowedStream<MyEvent, Window>
+```
+
+---
+
+### 2. Time Semantics & Assigners
+
+The `WindowAssigner` assigns elements to one or more `Window` objects.
+
+#### Interface: `WindowAssigner`
+
+```kotlin
+abstract class WindowAssigner<T, W : Window> {
+    // Returns a collection of windows the element belongs to
+    abstract fun assignWindows(element: T, timestamp: Long, context: WindowAssignerContext): Collection<W>
+
+    // Returns the default Trigger for this window type
+    abstract fun getDefaultTrigger(env: StreamExecutionEnvironment): Trigger<T, W>
+
+    // Used for type serialization
+    abstract fun getWindowSerializer(config: ExecutionConfig): TypeSerializer<W>
+
+    // Is this event time? (Crucial for Flink's internal logic)
+    abstract fun isEventTime(): Boolean
+}
+```
+
+#### Standard Assigners
+
+##### A. Time-Based Windows
+
+- **Tumbling Windows:** `[0, 5), [5, 10), ...`
+  ```kotlin
+  .window(TumblingEventTimeWindows.of(Duration.ofMinutes(5)))
+  // With Offset (e.g., UTC+8 daily windows)
+  .window(TumblingEventTimeWindows.of(Duration.ofDays(1), Duration.ofHours(-8)))
+  ```
+- **Sliding Windows:** `[0, 10), [5, 15), [10, 20)...`
+  ```kotlin
+  // Window size: 10m, Slide: 5m (elements belong to 2 windows)
+  .window(SlidingEventTimeWindows.of(Duration.ofMinutes(10), Duration.ofMinutes(5)))
+  ```
+
+##### B. Session Windows (Merging)
+
+Session windows group events by activity. They require a `MergingWindowAssigner`.
+
+- **Logic:** Assigns every element to a new window `[ts, ts + gap]`. Then, the framework merges overlapping windows.
+  ```kotlin
+  .window(EventTimeSessionWindows.withGap(Duration.ofMinutes(10)))
+  ```
+
+##### C. Global Windows
+
+Assigns everything to a single window. **Requires a custom Trigger** (default trigger never fires).
+
+```kotlin
+.window(GlobalWindows.create())
+.trigger(CountTrigger.of(1000)) // Must define when to fire
+```
+
+---
+
+### 3. Window Functions
+
+How data in the window is processed.
+
+#### A. Incremental Aggregation (Efficient)
+
+Computes a result _as elements arrive_. Only the accumulator is stored in state.
+
+##### `ReduceFunction`
+
+Combines two inputs into one. Input and Output types must be the same.
+
+```kotlin
+class SumReduce : ReduceFunction<Long> {
+    override fun reduce(value1: Long, value2: Long): Long = value1 + value2
+}
+```
+
+##### `AggregateFunction`
+
+The most flexible interface. Supports different types for Input, Accumulator, and Output.
+
+```kotlin
+interface AggregateFunction<IN, ACC, OUT> {
+    fun createAccumulator(): ACC
+    fun add(value: IN, accumulator: ACC): ACC
+    fun getResult(accumulator: ACC): OUT
+    fun merge(a: ACC, b: ACC): ACC // Required for Session Windows
+}
+```
+
+#### B. Full Window Functions (Powerful)
+
+Buffers _all_ elements (unless combined with incremental) until the trigger fires.
+
+##### `ProcessWindowFunction`
+
+Provides access to `Context` and window metadata.
+
+```kotlin
+abstract class ProcessWindowFunction<IN, OUT, KEY, W : Window> {
+    /**
+     * @param key The key for this window.
+     * @param context Context for metadata (watermark, state, side outputs).
+     * @param elements Iterable of all elements in the window.
+     * @param out Collector for results.
+     */
+    abstract fun process(key: KEY, context: Context, elements: Iterable<IN>, out: Collector<OUT>)
+
+    // Lifecycle methods
+    fun open(parameters: Configuration) {}
+    fun close() {}
+    fun clear(context: Context) {} // Called when window is purged
+
+    // Inner Context Interface
+    abstract class Context {
+        abstract fun currentProcessingTime(): Long
+        abstract fun currentWatermark(): Long
+        abstract fun windowState(): KeyedStateStore // Per-window state
+        abstract fun globalState(): KeyedStateStore // Per-key global state
+        abstract fun <X> output(outputTag: OutputTag<X>, value: X) // Side outputs
+    }
+}
+```
+
+#### C. Combined Approach (Best Practice)
+
+Passes the result of the incremental aggregation to the full window function.
+
+```kotlin
+input
+    .keyBy(...)
+    .window(...)
+    .aggregate(
+        AverageAggregator(),    // Pre-aggregates to (Count, Sum)
+        WindowResultProcess()   // Receives (Count, Sum), adds Window End Time
+    )
+```
+
+---
+
+### 4. Triggers
+
+Triggers determine **when** a window is evaluated or purged. They react to signals (element arrival, timers).
+
+#### `TriggerResult` Enum
+
+- **CONTINUE**: Do nothing.
+- **FIRE**: Invoke WindowFunction. Retain window contents (for multiple firings).
+- **PURGE**: Clear window contents. Do _not_ evaluate function.
+- **FIRE_AND_PURGE**: Invoke function, then clear contents (Standard closing behavior).
+
+#### `Trigger` Interface
+
+```kotlin
+abstract class Trigger<T, W : Window> {
+    // Called for every element added to the window
+    abstract fun onElement(element: T, timestamp: Long, window: W, ctx: TriggerContext): TriggerResult
+
+    // Called when a registered processing-time timer fires
+    abstract fun onProcessingTime(time: Long, window: W, ctx: TriggerContext): TriggerResult
+
+    // Called when the watermark passes a registered event-time timer
+    abstract fun onEventTime(time: Long, window: W, ctx: TriggerContext): TriggerResult
+
+    // Called when the window is purged. CRITICAL for clearing state!
+    abstract fun clear(window: W, ctx: TriggerContext)
+
+    // (Optional) Called when merging windows (Session Windows)
+    fun onMerge(window: W, ctx: OnMergeContext) {}
+}
+```
+
+#### Custom Trigger Example: Early Results
+
+This simplified trigger fires if the watermark passes the window end (standard) OR if the element count hits a threshold (early result).
+
+```kotlin
+class EarlyResultTrigger(val threshold: Int) : Trigger<Any, TimeWindow>() {
+    // Note: State handling (ValueState for count) omitted for brevity
+
+    override fun onElement(element: Any, ts: Long, window: TimeWindow, ctx: TriggerContext): TriggerResult {
+        // ... increment count state ...
+        if (count >= threshold) {
+             return TriggerResult.FIRE // Fire early, don't purge
+        }
+        ctx.registerEventTimeTimer(window.end) // Ensure standard firing
+        return TriggerResult.CONTINUE
+    }
+
+    override fun onEventTime(time: Long, window: TimeWindow, ctx: TriggerContext): TriggerResult {
+        return if (time == window.end) TriggerResult.FIRE_AND_PURGE else TriggerResult.CONTINUE
+    }
+}
+```
+
+---
+
+### 5. Evictors
+
+Optional component to remove elements _inside_ the window operator before processing.
+
+#### `Evictor` Interface
+
+```kotlin
+interface Evictor<T, W : Window> {
+    // Called BEFORE the window function is applied
+    fun evictBefore(elements: Iterable<TimestampedValue<T>>, size: Int, window: W, ctx: EvictorContext)
+
+    // Called AFTER the window function is applied
+    fun evictAfter(elements: Iterable<TimestampedValue<T>>, size: Int, window: W, ctx: EvictorContext)
+}
+```
+
+#### Constraints & Performance
+
+Using an Evictor forces Flink to store **all raw elements** in state, effectively disabling the memory benefits of `ReduceFunction` or `AggregateFunction` (though those functions will still run on the remaining elements).
+
+---
+
+### 6. Window Lifecycle & State Management
+
+### Lifecycle Steps
+
+1.  **Creation**: On the first element (`assignWindows`). `windowState` is initialized.
+2.  **Processing**: Elements accumulate. Triggers set timers.
+3.  **Firing**: Trigger returns `FIRE`. Function runs.
+4.  **Lateness**: If `allowedLateness > 0`, window persists after `window.end`. Late elements trigger `onElement` again.
+5.  **Purging (Deletion)**:
+    - Happens when `watermark >= window.end + allowedLateness`.
+    - **Flink cleans:** Window contents (elements/aggregation), Window Object.
+    - **YOU must clean:** Any per-window state defined in a custom `Trigger` or `ProcessWindowFunction` (via the `clear()` method).
+
+#### State Leakage Warning
+
+If implementing a custom `Trigger`, implementing `clear()` is mandatory.
+
+```kotlin
+override fun clear(window: W, ctx: TriggerContext) {
+    ctx.getPartitionedState(countStateDescriptor).clear() // Clean up custom state
+    ctx.deleteEventTimeTimer(window.end) // Clean up timers
+}
+```
+
+#### Global State vs. Window State
+
+- **Window State (`context.windowState()`):** Isolated per window instance. Automatically cleared when window closes.
+  - _Example:_ `PerWindowAverage`
+- **Global State (`context.globalState()`):** Persists across windows for the same key. Must be managed manually.
+  - _Example:_ `HistoricalAverage` (for comparing current window to history).
+
+---
+
+### 7. Handling Late Data
+
+Flink provides a three-tiered strategy for late events (timestamp < current watermark).
+
+1.  **Default (Drop):** If the watermark has passed `window.end`, the element is dropped.
+2.  **`allowedLateness` (Update):**
+    ```kotlin
+    .allowedLateness(Duration.ofMinutes(10))
+    ```
+    - The window state is kept for 10 extra minutes.
+    - Late elements trigger a new `FIRE` (computation updates).
+    - **Important:** `ProcessWindowFunction` will see the _updated_ full list. `AggregateFunction` will just receive the new _updated_ result.
+3.  **Side Output (collect):**
+    ```kotlin
+    val lateTag = OutputTag<MyEvent>("late-data")
+    .sideOutputLateData(lateTag)
+    ```
+    - Data arriving _after_ allowed lateness is not dropped, but sent to this side stream.
