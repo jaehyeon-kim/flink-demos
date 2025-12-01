@@ -33,6 +33,10 @@ Use the `run` task and specify which main class you want to execute using the `-
 ./gradlew run -PmainClass=me.jaehyeon.chapter6.PeriodicWatermarkGeneration
 ./gradlew run -PmainClass=me.jaehyeon.chapter6.MarkerBasedWatermarkGeneration
 ./gradlew run -PmainClass=me.jaehyeon.chapter6.CoProcessFunctionTimers
+./gradlew run -PmainClass=me.jaehyeon.chapter6.WindowFunctions --args="min1" # min2, avg, minmax1, or minmax2
+./gradlew run -PmainClass=me.jaehyeon.chapter6.CustomWindows
+./gradlew run -PmainClass=me.jaehyeon.chapter6.SideOutputs
+./gradlew run -PmainClass=me.jaehyeon.chapter6.LateDataHandling --args="filter" # sideout or update
 ```
 
 ## Running Tests

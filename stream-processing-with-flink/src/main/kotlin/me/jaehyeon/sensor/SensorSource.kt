@@ -40,36 +40,45 @@ class SensorSource : Source<SensorReading, SensorSplit, Unit> {
     }
 
     /**
-     * A simple SplitEnumerator that assigns one SensorSplit to each parallel SourceReader.
+     * A SplitEnumerator that handles task failures and restarts correctly.
+     * It assigns one SensorSplit to each parallel SourceReader.
      * It runs on the JobManager.
      */
     private class SimpleSplitEnumerator(
         private val context: SplitEnumeratorContext<SensorSplit>,
     ) : SplitEnumerator<SensorSplit, Unit> {
+        // Store splits that are waiting to be reassigned after a failure.
+        private val pendingSplits = mutableMapOf<Int, MutableList<SensorSplit>>()
+
         override fun start() {
             // The start method is intentionally left empty. Splits are assigned
-            // reactively when readers register via the addReader() method.
+            // reactively when readers register.
         }
 
-        /**
-         * This method is called by Flink whenever a new SourceReader subtask registers.
-         * This is the correct and safe place to assign a split, as it avoids race
-         * conditions where a split might be assigned before the reader is ready.
-         *
-         * @param subtaskId The ID of the reader subtask that has registered.
-         */
         override fun addReader(subtaskId: Int) {
-            // Create a new split for the registered reader and assign it.
-            context.assignSplit(SensorSplit(subtaskId), subtaskId)
+            // This is the safe place to assign splits. Check if there are pending
+            // splits for this subtask from a previous failure.
+            val pending = pendingSplits.remove(subtaskId)
+            if (pending != null && pending.isNotEmpty()) {
+                // If splits were pending, re-assign them.
+                context.assignSplits(
+                    org.apache.flink.api.connector.source
+                        .SplitsAssignment(mapOf(subtaskId to pending)),
+                )
+            } else {
+                // Otherwise, assign a brand-new split for this reader.
+                context.assignSplit(SensorSplit(subtaskId), subtaskId)
+            }
         }
 
         override fun addSplitsBack(
             splits: MutableList<SensorSplit>,
             subtaskId: Int,
         ) {
-            // In case of a reader failure, Flink calls this to return the splits that
-            // were assigned to the failed reader. We simply re-assign them.
-            splits.forEach { context.assignSplit(it, subtaskId) }
+            // A reader has failed. Instead of re-assigning its splits immediately,
+            // which causes a race condition, we store them in our pending map.
+            // They will be assigned later when the new reader registers via addReader().
+            pendingSplits.computeIfAbsent(subtaskId) { mutableListOf() }.addAll(splits)
         }
 
         override fun handleSplitRequest(
