@@ -37,6 +37,13 @@ Use the `run` task and specify which main class you want to execute using the `-
 ./gradlew run -PmainClass=me.jaehyeon.chapter6.CustomWindows
 ./gradlew run -PmainClass=me.jaehyeon.chapter6.SideOutputs
 ./gradlew run -PmainClass=me.jaehyeon.chapter6.LateDataHandling --args="filter" # sideout or update
+
+# Run the examples from Chapter 7
+./gradlew run -PmainClass=me.jaehyeon.chapter7.KeyedStateFunction
+./gradlew run -PmainClass=me.jaehyeon.chapter7.StatefulProcessFunction
+./gradlew run -PmainClass=me.jaehyeon.chapter7.BroadcastStateFunction
+./gradlew run -PmainClass=me.jaehyeon.chapter7.OperatorStateFunction
+./gradlew run -PmainClass=me.jaehyeon.chapter7.KeyedAndOperatorStateFunction
 ```
 
 ## Running Tests

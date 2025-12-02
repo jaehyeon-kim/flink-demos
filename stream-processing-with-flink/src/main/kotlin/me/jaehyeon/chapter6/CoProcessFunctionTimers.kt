@@ -1,6 +1,6 @@
 package me.jaehyeon.chapter6
 
-import me.jaehyeon.misc.FilterSwitch
+import me.jaehyeon.misc.ControlStreamGenerator
 import me.jaehyeon.sensor.SensorReading
 import me.jaehyeon.sensor.SensorSource
 import org.apache.flink.api.common.eventtime.WatermarkStrategy
@@ -48,7 +48,20 @@ object CoProcessFunctionTimers {
             )
 
         // Source for filter switch commands: (sensorId, duration)
-        val filterSwitches = FilterSwitch.createFilterSwitchSource(env)
+        val filterCommands =
+            listOf(
+                Tuple2("sensor_2", 5 * 1000L),
+                Tuple2("sensor_7", 6 * 1000L),
+                Tuple2("sensor_2", 10 * 1000L),
+            )
+        val filterSwitches =
+            ControlStreamGenerator
+                .createSource(
+                    env,
+                    "Filter Switch Generator",
+                    filterCommands,
+                    Types.TUPLE(Types.STRING, Types.LONG),
+                )
 
         // Key BOTH streams by sensor ID and then connect them
         val forwardedReadings =

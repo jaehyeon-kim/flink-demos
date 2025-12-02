@@ -130,6 +130,17 @@ Operator State is scoped to a parallel instance of an operator, not a key. Each 
 
 **Note on `ListCheckpointed`**: A simpler, now-deprecated interface called `ListCheckpointed` exists. For all new development, it is strongly recommended to use the more powerful and flexible `CheckpointedFunction` interface.
 
+| Feature         | `ListCheckpointed` (Old)                                                           | `CheckpointedFunction` (New)                                                                     |
+| :-------------- | :--------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| **State Scope** | Operator State only.                                                               | **Both Operator State and Keyed State.**                                                         |
+| **State Types** | Limited to `ListState` by default.                                                 | Richer types via state stores (`ValueState`, `ListState`, `MapState`, etc.).                     |
+| **Interface**   | `snapshotState`, `restoreState`.                                                   | `snapshotState`, `initializeState`.                                                              |
+| **Flexibility** | Low. Only suitable for non-keyed, list-based state.                                | **High.** Provides a unified model for functions that need both keyed and operator state.        |
+| **Rescaling**   | Restore logic must manually handle aggregating lists from multiple previous tasks. | Same logic required for operator state, but keyed state is redistributed automatically by Flink. |
+| **Status**      | **Deprecated.**                                                                    | **Current and recommended approach.**                                                            |
+
+In short, `CheckpointedFunction` is the successor to `ListCheckpointed`. It provides a more powerful and flexible model by giving the programmer access to both keyed and operator state stores within a single, unified interface.
+
 ### Understanding the CheckpointedFunction Interface
 
 This is the modern, recommended interface for implementing operator state.
