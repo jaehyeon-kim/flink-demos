@@ -8,6 +8,9 @@ This document provides a detailed overview of the transformation operations avai
   - [map](#map)
   - [filter](#filter)
   - [flatMap](#flatmap)
+- [Stateful Transformations and Rich Functions](#stateful-transformations-and-rich-functions)
+  - [Rich Functions (`RichMapFunction`, `RichFilterFunction`, etc.)](#rich-functions-richmapfunction-richfilterfunction-etc)
+  - [RichFunction vs. ProcessFunction: A Detailed Comparison](#richfunction-vs-processfunction-a-detailed-comparison)
 - [KeyedStream Transformations](#keyedstream-transformations)
   - [keyBy](#keyby)
   - [reduce](#reduce)
@@ -181,6 +184,122 @@ fun main() {
     env.execute("FlatMap Example")
 }
 ````
+
+---
+
+## Stateful Transformations and Rich Functions
+
+While the basic transformations are stateless, Flink allows you to add state and lifecycle management to them by using **Rich Functions**.
+
+### Rich Functions (`RichMapFunction`, `RichFilterFunction`, etc.)
+
+A "rich" function is a version of a standard function (like `MapFunction`) that provides access to lifecycle methods and the operator's context. This is the primary way to manage operator state and to initialize/tear down resources.
+
+**Key Features:**
+
+- **`open(Configuration parameters)`:** Called once per parallel task instance before any data is processed. Ideal for initializing database connections, machine learning models, or retrieving state handles.
+- **`close()`:** Called once when the task is shutting down. Ideal for releasing resources and closing connections.
+- **`getRuntimeContext()`:** Provides access to the `RuntimeContext`, which is used to get state handles (e.g., `ValueState`, `ListState`) and other information about the task.
+
+**Interface Signature**
+All rich functions extend `AbstractRichFunction`.
+
+```kotlin
+// Simplified for illustration
+abstract class AbstractRichFunction : Function {
+    // Called once on initialization
+    fun open(parameters: Configuration) {}
+
+    // Called once on tear down
+    fun close() {}
+
+    // Provides access to context (state, parallelism, etc.)
+    fun getRuntimeContext(): RuntimeContext
+}
+
+// Example for Map
+abstract class RichMapFunction<IN, OUT> : AbstractRichFunction(), MapFunction<IN, OUT>
+```
+
+**Full Code Example (`RichMapFunction`)**
+This example demonstrates a common use case: enriching data by calling an external service. The connection to the service is established once in `open()` for efficiency.
+
+```kotlin
+import org.apache.flink.api.common.functions.RichMapFunction
+import org.apache.flink.configuration.Configuration
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
+import org.apache.flink.streaming.api.datastream.DataStream
+
+// A hypothetical client to an external service
+class GeoIpClient(private val endpoint: String) {
+    fun connect() { println("Connecting to GeoIP service at $endpoint...") }
+    fun lookup(ip: String): String = "CountryA" // Dummy lookup
+    fun disconnect() { println("Disconnecting from GeoIP service.") }
+}
+
+data class LogEvent(val ip: String, val message: String)
+data class EnrichedLogEvent(val ip: String, val country: String, val message: String)
+
+// A RichMapFunction to add country information to log events
+class IpToCountryMapper : RichMapFunction<LogEvent, EnrichedLogEvent>() {
+    @Transient // Not part of checkpointed state
+    private lateinit var geoIpClient: GeoIpClient
+
+    override fun open(parameters: Configuration) {
+        // Called once to initialize the function
+        geoIpClient = GeoIpClient("http://geoip-service:1234")
+        geoIpClient.connect()
+    }
+
+    override fun map(value: LogEvent): EnrichedLogEvent {
+        // Called for every record
+        val country = geoIpClient.lookup(value.ip)
+        return EnrichedLogEvent(value.ip, country, value.message)
+    }
+
+    override fun close() {
+        // Called once to tear down the function
+        geoIpClient.disconnect()
+    }
+}
+
+fun main() {
+    val env = StreamExecutionEnvironment.getExecutionEnvironment()
+
+    val logs: DataStream<LogEvent> = env.fromElements(
+        LogEvent("8.8.8.8", "User login"),
+        LogEvent("1.1.1.1", "Page view")
+    )
+
+    val enrichedLogs: DataStream<EnrichedLogEvent> = logs.map(IpToCountryMapper())
+
+    enrichedLogs.print()
+
+    env.execute("Rich Function Example")
+}
+```
+
+---
+
+## RichFunction vs. ProcessFunction: A Detailed Comparison
+
+At a high level, think of it like this:
+
+- A **`RichFunction`** is a standard Flink function (`Map`, `Filter`, `FlatMap`, etc.) that has been given **lifecycle methods** and **access to context**.
+- A **`ProcessFunction`** is the most powerful, low-level building block in Flink. It is a special type of `RichFunction` that has been given **access to time (timers) and watermarks**.
+
+Every `ProcessFunction` _is_ a `RichFunction`, but not every `RichFunction` is a `ProcessFunction`. `ProcessFunction` is a superset with more capabilities.
+
+### Feature Comparison Table
+
+| Feature                                 | `RichFunction` (e.g., RichMapFunction) | `ProcessFunction` (e.g., KeyedProcessFunction) |
+| :-------------------------------------- | :------------------------------------- | :--------------------------------------------- |
+| **Lifecycle Methods (`open`, `close`)** | **Yes**                                | **Yes**                                        |
+| **Access to `RuntimeContext`**          | **Yes**                                | **Yes**                                        |
+| **Access to Keyed State**               | **Yes** (within a `KeyedStream`)       | **Yes**                                        |
+| **Access to Timers (`onTimer`)**        | No                                     | **Yes**                                        |
+| **Direct Watermark Access**             | No                                     | **Yes**                                        |
+| **Side Outputs**                        | No                                     | **Yes**                                        |
 
 ---
 
