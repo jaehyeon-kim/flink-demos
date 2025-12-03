@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "2.2.20"
     application
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("plugin.serialization") version "2.2.20"
 }
 
 group = "me.jaehyeon"
@@ -19,13 +20,23 @@ repositories {
     mavenCentral()
 }
 
+val flinkVersion = "1.20.1"
+val ktorVersion = "3.3.3"
+
 dependencies {
     // Flink Dependencies
-    compileOnly("org.apache.flink:flink-streaming-java:1.20.1")
-    compileOnly("org.apache.flink:flink-clients:1.20.1")
+    compileOnly("org.apache.flink:flink-streaming-java:$flinkVersion")
+    compileOnly("org.apache.flink:flink-clients:$flinkVersion")
+    compileOnly("org.apache.flink:flink-connector-base:$flinkVersion")
     // 'testImplementation' makes Flink available for test source compilation and execution.
-    testImplementation("org.apache.flink:flink-streaming-java:1.20.1")
-    testImplementation("org.apache.flink:flink-clients:1.20.1")
+    testImplementation("org.apache.flink:flink-streaming-java:$flinkVersion")
+    testImplementation("org.apache.flink:flink-clients:$flinkVersion")
+    testImplementation("org.apache.flink:flink-connector-base:$flinkVersion")
+    // Ktor
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     // Logging
     implementation("org.slf4j:slf4j-simple:2.0.17")
     // Testing

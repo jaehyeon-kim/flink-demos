@@ -44,6 +44,10 @@ Use the `run` task and specify which main class you want to execute using the `-
 ./gradlew run -PmainClass=me.jaehyeon.chapter7.BroadcastStateFunction
 ./gradlew run -PmainClass=me.jaehyeon.chapter7.OperatorStateFunction
 ./gradlew run -PmainClass=me.jaehyeon.chapter7.KeyedAndOperatorStateFunction
+
+# Run the examples from Chapter 8
+./gradlew run -PmainClass=me.jaehyeon.chapter8.AsyncFunction
+./gradlew run -PmainClass=me.jaehyeon.chapter8.CustomConnectors
 ```
 
 ## Running Tests
