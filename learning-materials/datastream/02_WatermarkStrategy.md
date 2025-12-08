@@ -65,11 +65,11 @@ fun main() {
 
     // A stream of events that are slightly out of order
     val sourceStream: DataStream<MyEvent> = env.fromElements(
-        MyEvent("A", 1, 1000L), // t=1s
-        MyEvent("A", 2, 2000L), // t=2s
-        MyEvent("A", 3, 4000L), // t=4s
-        MyEvent("A", 4, 3000L), // Late event, t=3s
-        MyEvent("A", 5, 5000L)  // t=5s
+        MyEvent("A", 1, 1000L), // w=1000-2000=−1000
+        MyEvent("A", 2, 2000L), // w=2000−2000=0
+        MyEvent("A", 3, 4000L), // w=4000-2000=2000
+        MyEvent("A", 4, 3000L), // Late event, w=2000 <- still within the 2-second boundary
+        MyEvent("A", 5, 5000L)  // w=5000−2000=3000
     )
 
     // Define the watermark strategy for a 2-second out-of-orderness bound

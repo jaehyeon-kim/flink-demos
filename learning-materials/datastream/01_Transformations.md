@@ -153,11 +153,12 @@ class DataStream<T> {
 
 **Code Snippet**
 
-````kotlin
+```kotlin
 val inputStream: DataStream<String> = // ... (stream of sentences)
 val wordsStream: DataStream<String> = inputStream.flatMap { value, out ->
     value.split(" ").forEach { out.collect(it) }
-}```
+}
+```
 
 **Full Code Example**
 
@@ -183,7 +184,7 @@ fun main() {
 
     env.execute("FlatMap Example")
 }
-````
+```
 
 ---
 
@@ -633,18 +634,21 @@ Sends **every** element to **every** downstream operator instance. This is typic
 
 **Code Snippet**
 
-````kotlin
+```kotlin
 val controlStream: DataStream<String> = // ...
-val broadcastedStream: DataStream<String> = controlStream.broadcast()```
+val broadcastedStream: DataStream<String> = controlStream.broadcast()
+```
 
 ### global
+
 Sends **all** elements to a **single** downstream operator instance (specifically, task instance 0). This forces a parallelism of 1 and creates a significant bottleneck, so it should be used with extreme caution.
 
 **Code Snippet**
+
 ```kotlin
 val inputStream: DataStream<String> = // ...
 val globalStream: DataStream<String> = inputStream.global()
-````
+```
 
 ### partitionCustom
 

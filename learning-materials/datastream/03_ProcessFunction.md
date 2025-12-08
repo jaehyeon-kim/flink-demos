@@ -133,6 +133,7 @@ This example identifies sensors that have become inactive. If a sensor does not 
 import org.apache.flink.api.common.eventtime.WatermarkStrategy
 import org.apache.flink.api.common.state.ValueState
 import org.apache.flink.api.common.state.ValueStateDescriptor
+import org.apache.flink.api.common.typeinfo.Types
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction
@@ -152,7 +153,7 @@ class InactiveSensorDetector : KeyedProcessFunction<String, SensorReading, Senso
     private lateinit var lastTimerState: ValueState<Long>
 
     override fun open(parameters: Configuration) {
-        val stateDescriptor = ValueStateDescriptor("lastTimer", Long::class.javaObjectType)
+        val stateDescriptor = ValueStateDescriptor("lastTimer", Types.LONG)
         lastTimerState = runtimeContext.getState(stateDescriptor)
     }
 

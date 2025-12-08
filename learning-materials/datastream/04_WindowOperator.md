@@ -90,20 +90,23 @@ abstract class WindowAssigner<T, W : Window> {
 
 These are the most common types of windows and are based on event time or processing time.
 
-- **Tumbling Windows:** Fixed-size, non-overlapping windows. Each element belongs to exactly one window.
+**Tumbling Windows:** Fixed-size, non-overlapping windows. Each element belongs to exactly one window.
 
-  ````kotlin
-  // 5-minute tumbling windows based on event time
-  .window(TumblingEventTimeWindows.of(Duration.ofMinutes(5)))
+```kotlin
+// 5-minute tumbling windows based on event time
+.window(TumblingEventTimeWindows.of(Duration.ofMinutes(5)))
 
-  // Daily tumbling windows offset for a specific timezone (e.g., UTC-8)
-  .window(TumblingEventTimeWindows.of(Duration.ofDays(1), Duration.ofHours(-8)))
-  ```*   **Sliding Windows:** Fixed-size, overlapping windows. An element can belong to multiple windows. Defined by a size and a slide interval.
-  ```kotlin
-  // Window size: 10 minutes, Slide interval: 5 minutes
-  // Each element will belong to two windows.
-  .window(SlidingEventTimeWindows.of(Duration.ofMinutes(10), Duration.ofMinutes(5)))
-  ````
+// Daily tumbling windows offset for a specific timezone (e.g., UTC-8)
+.window(TumblingEventTimeWindows.of(Duration.ofDays(1), Duration.ofHours(-8)))
+```
+
+**Sliding Windows:** Fixed-size, overlapping windows. An element can belong to multiple windows. Defined by a size and a slide interval.
+
+```kotlin
+// Window size: 10 minutes, Slide interval: 5 minutes
+// Each element will belong to two windows.
+.window(SlidingEventTimeWindows.of(Duration.ofMinutes(10), Duration.ofMinutes(5)))
+```
 
 #### Session Windows
 
