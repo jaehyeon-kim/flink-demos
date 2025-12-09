@@ -49,9 +49,7 @@ fun main() {
 
     // Enable checkpointing. The argument is the interval in milliseconds.
     // This tells Flink to start a new checkpoint every 5 minutes.
-    env.enableCheckpointing(300000)
-
-    // --- Advanced Optional Configurations ---
+    env.checkpointConfig.checkpointInterval = 300 * 1000
 
     // Set the processing guarantee.
     // EXACTLY_ONCE: Flink will ensure every record affects the state exactly once. This is the default.

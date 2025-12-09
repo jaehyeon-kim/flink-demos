@@ -17,31 +17,49 @@ This document provides a detailed guide to configuring and managing state in Apa
 
 ## Choosing a State Backend
 
-A State Backend is a component that determines how Flink stores and manages the state of your application. The choice of state backend is one of the most critical architectural decisions, as it directly impacts performance, scalability, and operational characteristics.
+In Apache Flink, a "State Backend" determines how the application's working state is stored. Flink separates this from **Checkpoint Storage**, which defines where durable snapshots (checkpoints) are written.
 
 ### State Backend Options
 
-Flink offers three primary state backends.
+There are two primary, recommended state backends to choose from, each designed for different scalability needs.
 
-1.  **`HashMapStateBackend`**:
+#### 1. `HashMapStateBackend` (In-Memory State)
 
-    - **Storage**: Keeps data as Java objects on the TaskManager's heap. Checkpoints are written to a configured file system (e.g., S3, HDFS).
-    - **Performance**: Very fast, as it operates directly in memory.
-    - **Limitations**: State size is strictly limited by the available memory of the TaskManager. Not suitable for large state.
-    - **Use Case**: Best for local development, testing, and jobs with very small state.
+This backend keeps all of its working state as objects on the Java Virtual Machine (JVM) heap of the TaskManagers.
 
-2.  **`FileSystemStateBackend`**:
+- **Working Storage**: On the JVM heap.
+- **Checkpoint Storage**: Writes snapshots to a durable, remote file system (like Amazon S3, HDFS, or Google Cloud Storage).
+- **Performance**: **Highest performance.** State access is as fast as reading from memory, avoiding any serialization overhead.
+- **Limitations**: State size is strictly limited by the available TaskManager heap memory. It is not suitable for large states and can lead to Garbage Collection (GC) pressure.
+- **Best For**:
+  - Local development and testing.
+  - Production jobs with very small and predictable state.
 
-    - **Storage**: The default state backend. Like `HashMapStateBackend`, it keeps in-flight data on the Java heap. For checkpoints, it writes snapshots to a configured distributed file system.
-    - **Performance**: Good performance for many use cases.
-    - **Limitations**: Still limited by the memory of the TaskManagers.
-    - **Use Case**: A solid default for many applications with moderately sized state that fits comfortably in memory.
+> **Note:** This backend, when combined with checkpointing to a file system, provides the exact functionality of the legacy `FileSystemStateBackend`, which is now functionally deprecated.
 
-3.  **`RocksDBStateBackend`**:
-    - **Storage**: Manages state in a RocksDB instance, an embedded key-value store that writes to the local disk of the TaskManager. Checkpoints are still written to a remote distributed file system.
-    - **Performance**: Can be slightly slower than memory-based backends due to serialization/deserialization and disk I/O for every state access. However, it offers advanced features like incremental checkpointing.
-    - **Scalability**: The only backend that supports state sizes far larger than available memory (terabytes of state per TaskManager is possible).
-    - **Use Case**: The standard for production applications with large state or applications that require the performance benefits of incremental checkpoints.
+#### 2. `EmbeddedRocksDBStateBackend` (On-Disk State)
+
+This backend manages its working state within an embedded RocksDB database, which stores its files on the TaskManager's local disk.
+
+- **Working Storage**: On the local disk of the TaskManager, managed by RocksDB.
+- **Checkpoint Storage**: Writes snapshots to a durable, remote file system, just like the `HashMapStateBackend`.
+- **Performance**: Slightly slower for raw state access compared to the in-memory backend due to the need for serialization/deserialization on every read and write.
+- **Scalability**: **Extremely high.** This is the only backend that can manage state far larger than the available memory (terabytes per TaskManager is possible). It also significantly reduces pressure on the JVM's Garbage Collector.
+- **Key Feature**: It is the only backend that supports **incremental checkpoints**, which can dramatically reduce checkpointing time for large-state applications.
+- **Best For**:
+  - The standard for most production applications.
+  - Any job with large state (e.g., large windows, complex keyed state).
+  - Applications requiring high fault tolerance with minimal checkpointing overhead.
+
+#### Summary: Which Backend Should You Use?
+
+| Feature                     | `HashMapStateBackend`         | `EmbeddedRocksDBStateBackend`                         |
+| :-------------------------- | :---------------------------- | :---------------------------------------------------- |
+| **Working State Location**  | JVM Heap (In-Memory)          | Local Disk                                            |
+| **Max State Size**          | Limited by RAM                | Limited by Disk Size                                  |
+| **Performance**             | **Highest** (for small state) | **Excellent** (with better stability for large state) |
+| **Incremental Checkpoints** | No                            | **Yes**                                               |
+| **Primary Use Case**        | Small state, testing          | **Production standard, large state**                  |
 
 ### Configuring a State Backend
 
@@ -66,9 +84,68 @@ fun main() {
 }
 ```
 
+**Flink configuration (flink-conf.yaml)**
+
+**HashMapStateBackend**
+
+```yaml
+# 1. State Backend: Use 'hashmap' to store the working state in memory (JVM heap).
+state.backend: hashmap
+
+# 2. Checkpoint Storage: Define a directory on a durable filesystem (like S3, HDFS, or GCS).
+# Flink will automatically use the FileSystemCheckpointStorage when this is set.
+state.checkpoints.dir: s3a://flink-checkpoints/checkpoints/
+
+# 3. Savepoint Directory: This configuration remains the same.
+state.savepoints.dir: s3a://flink-savepoints/savepoints/
+```
+
+**EmbeddedRocksDBStateBackend**
+
+```yaml
+# =============================================================================
+#  Essential State Backend Configuration
+# =============================================================================
+
+# 1. Enable the RocksDB state backend.
+state.backend: rocksdb
+
+# 2. Set the remote, durable directory for automatic checkpoints (fault tolerance).
+state.checkpoints.dir: s3a://flink-checkpoints/checkpoints/
+
+# 3. Set a SEPARATE remote directory for user-managed savepoints (operational actions).
+state.savepoints.dir: s3a://flink-checkpoints/savepoints/
+
+# 4. Point RocksDB's working files to a dedicated local SSD for high performance.
+state.backend.rocksdb.localdir: /data/flink/rocksdb
+
+# =============================================================================
+#  Performance and Checkpointing Tuning
+# =============================================================================
+
+# 5. Enable incremental checkpoints to drastically reduce checkpoint times for large state.
+state.backend.rocksdb.incremental: true
+
+# 6. Use a predefined profile optimized for modern SSDs.
+state.backend.rocksdb.predefined-options: FLASH_SSD_OPTIMIZED
+
+# 7. Increase the number of background threads for compaction and flushing.
+state.backend.rocksdb.thread.num: 4
+
+# =============================================================================
+#  Memory Management
+# =============================================================================
+
+# 8. Allocate 40% of the TaskManager's memory to be managed by Flink for state.
+taskmanager.memory.managed.fraction: 0.4
+
+# 9. Ensure Flink's managed memory control for RocksDB is enabled (default and recommended).
+state.backend.rocksdb.memory.managed: true
+```
+
 ### Support for Object Storage (S3, HDFS)
 
-**Yes, Flink has first-class support for object storage like S3, Google Cloud Storage, and HDFS.** This is configured as the destination for **checkpoints and savepoints**, not directly in the state backend itself (though the path is often passed to the backend's constructor).
+Flink has first-class support for object storage like S3, Google Cloud Storage, and HDFS. This is configured as the destination for **checkpoints and savepoints**, not directly in the state backend itself (though the path is often passed to the backend's constructor).
 
 Flink uses filesystem plugins to communicate with these systems. For example, to use S3, you would:
 

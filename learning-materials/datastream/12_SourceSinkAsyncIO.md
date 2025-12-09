@@ -16,15 +16,30 @@ This document provides a comprehensive and detailed guide to the Flink 1.20 Sour
 
 ## Flink Source API
 
-The Data Source API provides a unified mechanism for ingesting data into Flink, supporting both bounded (batch) and unbounded (streaming) workloads. It's designed for high performance, scalability, and robust state management for fault tolerance.
+The Flink Source API provides a unified mechanism for ingesting data, supporting both bounded (batch) and unbounded (streaming) workloads. It's designed for high performance and robust fault tolerance. Using the official `KafkaSource` is a perfect way to understand its core components.
 
 ### Core Concepts and Components
 
-A Flink Source is built around three fundamental components that work together to read data from an external system.
+A Flink Source is built around three fundamental components that work together to read data from an external system like Kafka.
 
-1.  **Splits**: A `SourceSplit` represents a finite portion of the data to be processed. For a streaming source like a network socket, the concept of a "split" can be more abstract. A single socket connection is not naturally divisible, so we will model the entire connection as a single split. Therefore, this source will have a parallelism of 1.
-2.  **SplitEnumerator**: This component is the central coordinator of the source. It runs as a single instance on the JobManager. For our Netcat source, its job is simple: create one split representing the network endpoint and assign it to the single `SourceReader` that connects.
-3.  **SourceReader**: The `SourceReader` runs on a TaskManager. It requests a split from the `SplitEnumerator`, connects to the source system described by the split (in this case, opening a socket), reads the data, and emits the records into the Flink data stream.
+1.  **Splits**:
+    A `SourceSplit` represents a finite, processable chunk of data. In the context of Kafka, this concept maps perfectly: **one `SourceSplit` corresponds to one Kafka Topic Partition**. If you are reading from a topic with 10 partitions, Flink will see 10 potential splits, allowing for a parallelism of up to 10. Each split contains the topic name, partition number, and a starting offset.
+
+2.  **SplitEnumerator**:
+    This is the central coordinator, running as a single instance on the JobManager. For the `KafkaSource`, its responsibilities are critical:
+
+    - **Partition Discovery**: It connects to the Kafka brokers to discover all partitions for the subscribed topic(s).
+    - **Split Assignment**: It assigns the partition splits to the available `SourceReader` instances, ensuring an even distribution of work across the TaskManagers.
+    - **Handling Dynamic Changes**: It periodically checks for new partitions added to the Kafka topic. When new partitions are found, it creates new splits and assigns them to active readers, allowing your Flink job to scale seamlessly without a restart.
+    - **Offset Coordination**: It receives the latest processed offsets from the readers and commits them as part of Flink's checkpoints, guaranteeing exactly-once semantics.
+
+3.  **SourceReader**:
+    The `SourceReader` is the workhorse that runs on a TaskManager. Each reader is assigned one or more partition splits by the `SplitEnumerator`. Its job is to:
+    - Request splits (Kafka partitions) to work on.
+    - Connect to the Kafka brokers and fetch records for its assigned partitions.
+    - Start consuming from the precise offset provided in the split, which is determined from the last successful checkpoint.
+    - Deserialize the records and emit them into the Flink data stream.
+    - Report the latest consumed offsets back to the `SplitEnumerator` when a checkpoint is triggered.
 
 These components are brought together by the `Source` class, which acts as the main entry point and a factory for creating the enumerator and readers.
 
