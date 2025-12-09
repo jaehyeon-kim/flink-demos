@@ -51,20 +51,19 @@ This function is called for every pair of elements that match the join condition
 **Interface Signature:**
 
 ```kotlin
-abstract class ProcessJoinFunction<IN1, IN2, OUT> {
-    abstract fun processElement(
-        left: IN1,
-        right: IN2,
-        ctx: Context,
-        out: Collector<OUT>
-    )
+public abstract class ProcessJoinFunction<IN1, IN2, OUT> {
 
-    abstract class Context {
-        val timestamp: Long // Timestamp of the left element
-        val leftTimestamp: Long // Timestamp of the left element
-        val rightTimestamp: Long // Timestamp of the right element
-        fun currentProcessingTime(): Long
-        fun currentWatermark(): Long
+    public abstract void processElement(
+        IN1 left,
+        IN2 right,
+        Context ctx,
+        Collector<OUT> out) throws Exception;
+
+    public abstract class Context {
+        public abstract long getTimestamp(); // The timestamp of the joined pair.
+        public abstract long getLeftTimestamp(); // The timestamp of the left element of a joined pair.
+        public abstract long getRightTimestamp(); // The timestamp of the right element of a joined pair.
+        public abstract <X> void output(OutputTag<X> outputTag, X value);
     }
 }
 ```
@@ -110,28 +109,38 @@ When an element arrives, it is immediately stored in a `MapState` (Timestamp -> 
 
 ##### 2. The Cleanup Logic (Watermarks)
 
-The most critical concept is that **buffering is independent of matching**. Even though `A1` and `B1` have already matched, Flink **cannot** delete them immediately. Why?
+**Rule 1: Cleaning Up the Left Side (the `Order`)**
 
-Because it's a stream. There is no guarantee that `A1` matches _only_ `B1`. It's possible that another Shipment `B2` arrives at `12:45`. `A1` needs to be there to match `B2` as well.
+An `Order` arrives first. It needs to wait for a `Shipment` that can be up to 60 minutes _later_.
 
-**When is `Order A1` (12:00) actually deleted?**
-It is deleted when the Watermark (`W`) advances past the point where any _new_ Shipment could possibly match it.
+- **`Order A1` arrives at `12:00`.**
+- Its "promise window" for matching Shipments is from `12:00` to `13:00` (`12:00 + 60 minutes`).
+- Flink **cannot** delete `Order A1` until it is absolutely certain that no Shipment with a timestamp in the `[12:00, 13:00]` range will ever arrive.
+- **When does Flink get this certainty?** When the **Watermark passes `13:00`**.
+- A watermark of `13:01` is a guarantee that time has moved past the entire matching window for `Order A1`. At this point, `Order A1`'s promise has expired, and it is safely removed from state.
 
-- **Constraint:** Shipments can be up to `+60 min` later.
-- **Cleanup Time:** `Order.ts + upperBound = 12:00 + 60m = 13:00`.
-- **Trigger:** When `Watermark >= 13:00`.
+**Cleanup Rule for Left Element (A):** Delete when `Watermark > A.timestamp + upperBound`
 
-**Visualizing State Size vs. Watermarks:**
+**Rule 2: Cleaning Up the Right Side (the `Shipment`)**
 
-| Time      | Event / Watermark     | State: Orders | State: Shipments | Note                                                    |
-| :-------- | :-------------------- | :------------ | :--------------- | :------------------------------------------------------ |
-| **12:00** | `Order A1 (12:00)`    | `[A1]`        | `[]`             | A1 buffered. Timer set for 13:00.                       |
-| **12:30** | `Shipment B1 (12:30)` | `[A1]`        | `[B1]`           | Match found! But **both** stay in state.                |
-| **12:45** | `W = 12:31`           | `[A1]`        | `[]`             | Shipment cleanup: `12:30 - 0 = 12:30`. B1 is removed.\* |
-| **12:55** | `Order A2 (12:55)`    | `[A1, A2]`    | `[]`             | State grows. A2 waits for match.                        |
-| **13:01** | `W = 13:01`           | `[A2]`        | `[]`             | **A1 Removed.** `13:01 > 12:00 + 60m`.                  |
+A `Shipment` arrives. It needs to be matched against an `Order` that could have occurred up to 0 minutes _earlier_ (based on the `lowerBound` of 0).
 
-_\*Note on Right Side Cleanup: The cleanup logic for the right side (Shipments) depends on the inverse bounds. An element `b` is removed when `watermark >= b.timestamp - lowerBound`._
+- **`Shipment B1` arrives at `12:30`.**
+- We need to find the window of `Order` timestamps that could match it. By reversing the logic (`Shipment.ts - 60 <= Order.ts <= Shipment.ts - 0`), we see that `Shipment B1` can match `Orders` from `11:30` to `12:30`.
+- The **latest** possible `Order` it could match has a timestamp of `12:30`.
+- Flink **cannot** delete `Shipment B1` until it is sure that no more `Orders` with a timestamp of `12:30` or earlier can arrive.
+- **When does Flink get this certainty?** When the **Watermark passes `12:30`**.
+- As shown in your table, when the watermark becomes `12:31`, Flink knows the window of opportunity for `Shipment B1` has closed. It is safely deleted.
+
+**Cleanup Rule for Right Element (B):** Delete when `Watermark > B.timestamp - lowerBound`
+
+| Time      | Event / Watermark     | State: Orders | State: Shipments | Why?                                                                                                                                     |
+| :-------- | :-------------------- | :------------ | :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| **12:00** | `Order A1 (12:00)`    | `[A1]`        | `[]`             | A1 is buffered. Its cleanup time is `12:00 + 60m = 13:00`.                                                                               |
+| **12:30** | `Shipment B1 (12:30)` | `[A1]`        | `[B1]`           | B1 is buffered. Its cleanup time is `12:30 - 0m = 12:30`. **A match is found**, but neither's cleanup time has been reached.             |
+| **12:45** | `W = 12:31`           | `[A1]`        | `[]`             | **B1 is removed.** The watermark `12:31` is greater than B1's cleanup time of `12:30`. A1's cleanup time (`13:00`) has not been reached. |
+| **12:55** | `Order A2 (12:55)`    | `[A1, A2]`    | `[]`             | A2 is buffered. Its cleanup time is `12:55 + 60m = 13:55`.                                                                               |
+| **13:01** | `W = 13:01`           | `[A2]`        | `[]`             | **A1 is removed.** The watermark `13:01` is greater than A1's cleanup time of `13:00`. A2's cleanup time has not been reached.           |
 
 ---
 
@@ -173,7 +182,13 @@ A Window Join groups elements from two streams into the same time window and the
 - **Logic:** Joins elements from two keyed streams that are assigned to the same window.
 - **Boundary Problem:** An element at `12:59:59` in a one-hour tumbling window `[12:00, 13:00)` will **never** join with an element at `13:00:01`, as the second element belongs to the next window `[13:00, 14:00)`.
 
-### Syntax
+### Syntax and Examples
+
+The syntax requires chaining `join()`, `where()`, `equalTo()`, and `window()` calls, followed by an `apply()` with a `JoinFunction`.
+
+#### Tumbling Windows
+
+Tumbling windows have a fixed size and do not overlap. They are useful for periodic reports, such as hourly statistics.
 
 ```kotlin
 val streamA: DataStream<EventA> = //...
@@ -184,7 +199,41 @@ val joinedStream = streamA
     .where { it.key }
     .equalTo { it.key }
     .window(TumblingEventTimeWindows.of(Time.hours(1)))
-    .apply { left, right -> JoinedResult(left, right) } // Simple JoinFunction
+    .apply { left, right -> JoinedResult(left, right) }
+```
+
+#### Sliding Windows
+
+Sliding windows have a fixed size but slide by a specified interval. They overlap if the slide interval is smaller than the window size, allowing for smoother, moving-average-style aggregations.
+
+```kotlin
+val streamA: DataStream<EventA> = //...
+val streamB: DataStream<EventB> = //...
+
+// A 1-hour window that slides every 10 minutes
+val joinedStream = streamA
+    .join(streamB)
+    .where { it.key }
+    .equalTo { it.key }
+    .window(SlidingEventTimeWindows.of(Time.hours(1), Time.minutes(10)))
+    .apply { left, right -> JoinedResult(left, right) }
+```
+
+#### Session Windows
+
+Session windows do not have a fixed size. Instead, they group elements by a period of inactivity, or a "session gap." They are ideal for user-centric analysis, such as tracking user sessions on a website.
+
+```kotlin
+val streamA: DataStream<EventA> = //...
+val streamB: DataStream<EventB> = //...
+
+// Group events into sessions with a 30-minute gap of inactivity
+val joinedStream = streamA
+    .join(streamB)
+    .where { it.key }
+    .equalTo { it.key }
+    .window(EventTimeSessionWindows.withGap(Time.minutes(30)))
+    .apply { left, right -> JoinedResult(left, right) }
 ```
 
 ## CoGroup (Window Join Variant)
