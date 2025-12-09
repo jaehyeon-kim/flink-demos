@@ -1,5 +1,7 @@
 # Flink Demos
 
+This repository contains the source of the following posts, along with additional learning resources.
+
 - [Getting Started With Pyflink on AWS](https://jaehyeon.me/blog/2023-08-17-getting-started-with-pyflink-on-aws-part-1/)
   - Apache Flink is widely used for building real-time stream processing applications. On AWS, Amazon Managed Service for Apache Flink is the easiest option to develop a Flink app as it provides the underlying infrastructure. Updating a guide from AWS, this series of posts discuss how to develop and deploy a Flink (Pyflink) application on AWS where the data source and sink are Kafka topics.
 - [Kafka, Flink and DynamoDB for Real Time Fraud Detection](https://jaehyeon.me/blog/2023-08-10-fraud-detection-part-1/)
@@ -8,3 +10,5 @@
   - Building Apache Flink Applications in Java by Confluent is a course to introduce Apache Flink through a series of hands-on exercises. Utilising the Flink DataStream API, the course develops three Flink applications from ingesting source data into calculating usage statistics. As part of learning the Flink DataStream API in Pyflink, I converted the Java apps into Python equivalent while performing the course exercises in Pyflink. This post summarises the progress of the conversion and shows the final output.
 - [Run Flink SQL Cookbook in Docker](https://jaehyeon.me/blog/2025-04-15-sql-cookbook/)
   - The [Flink SQL Cookbook](https://github.com/ververica/flink-sql-cookbook) is a practical guide packed with self-contained examples for learning [Apache Flink SQL](https://nightlies.apache.org/flink/flink-docs-master/docs/dev/table/sql/overview/), covering everything from basic queries to advanced stream processing patterns. Since it's designed for the Ververica Platform and lacks cluster setup instructions, this post shows how to run the examples locally using Docker Compose for a smooth, hands-on experience.
+- [Stream Processing With Flink in Kotlin](https://jaehyeon.me/blog/2025-12-10-streaming-processing-with-flink-in-kotlin/)
+  - A couple of years ago, I read [Stream Processing with Apache Flink](https://www.oreilly.com/library/view/stream-processing-with/9781491974285/) and worked through the examples using PyFlink. While the book offered a solid introduction to Flink, I frequently hit limitations with the Python API, as many features from the book weren't supported. This time, I decided to revisit the material, but using Kotlin. The experience has been much more rewarding and fun.

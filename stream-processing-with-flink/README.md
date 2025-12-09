@@ -1,4 +1,4 @@
-# Stream Processing with Flink (Kotlin Examples)
+# Stream Processing with Flink in Flink
 
 This project contains Kotlin implementations of examples for learning Apache Flink, inspired by the [`streaming-with-flink` Scala](https://github.com/streaming-with-flink/examples-scala) project.
 
