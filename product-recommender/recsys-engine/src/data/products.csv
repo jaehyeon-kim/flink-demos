@@ -1,0 +1,201 @@
+product_id,name,description,price,category
+1,Classic Cheeseburger,"A juicy all-beef patty with American cheese, lettuce, tomato, onion, and our signature sauce.",12.99,Burgers & Sandwiches
+2,Double Cheeseburger,"Two beef patties stacked with double American cheese and classic fixings.",15.99,Burgers & Sandwiches
+3,Triple Cheeseburger,"Three beef patties for the ultimate appetite, loaded with cheese and sauce.",18.99,Burgers & Sandwiches
+4,Bacon BBQ Burger,"Our classic burger topped with crispy bacon, cheddar cheese, onion rings, and tangy BBQ sauce.",14.99,Burgers & Sandwiches
+5,Double Bacon BBQ Burger,"Two patties, extra bacon, and extra onion rings with BBQ sauce.",17.99,Burgers & Sandwiches
+6,Mushroom Swiss Burger,"Smothered in sautéed mushrooms and melted Swiss cheese on a toasted bun.",13.99,Burgers & Sandwiches
+7,Spicy Jalapeño Burger,"Kicks it up a notch with spicy jalapeños, pepper jack cheese, and chipotle aioli.",13.99,Burgers & Sandwiches
+8,The Aussie Burger,"A true classic with beetroot, a fried egg, pineapple, bacon, cheese, lettuce, and tomato.",16.99,Burgers & Sandwiches
+9,The Aussie Works Burger,"Double patty, beetroot, egg, pineapple, bacon, and grilled onions.",19.99,Burgers & Sandwiches
+10,Grilled Chicken Sandwich,"A tender grilled chicken breast with lettuce, tomato, and mayonnaise.",12.99,Burgers & Sandwiches
+11,Crispy Chicken Sandwich,"A perfectly crispy fried chicken breast with pickles and our signature sauce.",12.99,Burgers & Sandwiches
+12,Chicken Schnitzel Burger,"Golden crumbed chicken schnitzel with lettuce, cheese, and mayonnaise.",14.99,Burgers & Sandwiches
+13,Chicken Parmigiana Burger,"Crumbed schnitzel topped with napoli sauce, ham, and melted mozzarella on a bun.",15.99,Burgers & Sandwiches
+14,Southern Fried Chicken Burger,"Buttermilk fried chicken with coleslaw and sriracha mayo.",14.99,Burgers & Sandwiches
+15,Peri-Peri Chicken Burger,"Grilled chicken breast marinated in spicy peri-peri sauce with lettuce and tomato.",13.99,Burgers & Sandwiches
+16,Steak Sandwich,"Tender scotch fillet on Turkish bread with caramelized onions, lettuce, tomato, and BBQ sauce.",18.99,Burgers & Sandwiches
+17,Open Steak Sandwich,"Served open-face on sourdough with rocket, tomato relish, and onion rings.",19.99,Burgers & Sandwiches
+18,BLT Sandwich,"Crispy bacon, fresh lettuce, and tomato on toasted thick-cut bread with mayo.",11.99,Burgers & Sandwiches
+19,Club Sandwich,"Triple-decker with roasted turkey, bacon, lettuce, tomato, and mayo.",14.99,Burgers & Sandwiches
+20,Veggie Delight Burger,"A seasoned plant-based patty with avocado, sprouts, and hummus.",13.99,Burgers & Sandwiches
+21,Beyond Classic Burger,"100% plant-based Beyond Meat patty with vegan cheese and mustard.",15.99,Burgers & Sandwiches
+22,Mushroom Haloumi Burger,"Grilled large field mushroom with squeaky haloumi cheese and pesto.",14.99,Burgers & Sandwiches
+23,Fish Burger,"Battered barramundi fillet with tartare sauce and crisp lettuce.",14.99,Burgers & Sandwiches
+24,Salmon Burger,"Grilled salmon patty with dill yogurt sauce and cucumber.",16.99,Burgers & Sandwiches
+25,Breakfast Burger,"Beef patty, bacon, fried egg, hash brown, and cheese on a brioche bun.",15.99,Burgers & Sandwiches
+26,Avocado Bacon Burger,"Fresh avocado slices, crispy bacon, and Swiss cheese.",15.49,Burgers & Sandwiches
+27,Blue Cheese Burger,"Topped with crumbled blue cheese and caramelized onions.",14.99,Burgers & Sandwiches
+28,Hawaiian Burger,"Beef patty topped with grilled pineapple, ham, and melted cheese.",14.49,Burgers & Sandwiches
+29,Truffle Mushroom Burger,"Sautéed mushrooms with truffle aioli and provolone cheese.",16.49,Burgers & Sandwiches
+30,Philly Cheese Steak Roll,"Thinly sliced steak with sautéed onions, peppers, and melted provolone.",15.99,Burgers & Sandwiches
+31,Pulled Pork Roll,"Slow-cooked BBQ pulled pork with coleslaw on a brioche bun.",14.99,Burgers & Sandwiches
+32,Brisket Burger,"Smoked beef brisket with pickles and mustard BBQ sauce.",16.99,Burgers & Sandwiches
+33,Turkey Burger,"Lean ground turkey patty with cranberry sauce and brie.",13.99,Burgers & Sandwiches
+34,Lamb Burger,"Seasoned lamb patty with tzatziki, feta, and olive tapenade.",16.99,Burgers & Sandwiches
+35,Slider Trio,"Three mini burgers: one Cheeseburger, one Pulled Pork, one Crispy Chicken.",15.99,Burgers & Sandwiches
+36,Classic Pepperoni Pizza,"A timeless classic with a generous layer of zesty pepperoni and mozzarella cheese.",19.99,Pizzas
+37,Double Pepperoni Pizza,"Double the pepperoni for meat lovers.",22.99,Pizzas
+38,Margherita Pizza,"Simple and delicious with fresh mozzarella, basil, and a robust tomato sauce.",17.99,Pizzas
+39,Supreme Pizza,"Loaded with pepperoni, sausage, bell peppers, onions, olives, and mushrooms.",24.99,Pizzas
+40,BBQ Chicken Pizza,"Tender grilled chicken, red onions, and cilantro on a sweet and tangy BBQ sauce base.",22.99,Pizzas
+41,Veggie Delight Pizza,"A garden on a pizza! Topped with bell peppers, onions, olives, mushrooms, and fresh tomatoes.",21.99,Pizzas
+42,The Aussie Pizza,"Tomato base topped with ham, bacon, onions, and a cracked egg in the center.",23.99,Pizzas
+43,Meat Lovers Pizza,"Stacked with pepperoni, ham, bacon, sausage, and ground beef.",25.99,Pizzas
+44,Hawaiian Pizza,"The controversial classic: Ham and pineapple on a tomato base.",20.99,Pizzas
+45,Capricciosa Pizza,"Ham, mushrooms, olives, and artichokes.",22.99,Pizzas
+46,Tandoori Chicken Pizza,"Marinated tandoori chicken, spinach, onion, and a yogurt swirl.",23.99,Pizzas
+47,Pesto Chicken Pizza,"Basil pesto base with chicken, cherry tomatoes, and parmesan.",22.99,Pizzas
+48,Seafood Marinara Pizza,"Prawns, calamari, mussels, and garlic on a tomato base.",26.99,Pizzas
+49,Garlic Prawn Pizza,"Marinated garlic prawns with spinach and feta.",25.99,Pizzas
+50,Four Cheese Pizza,"Mozzarella, cheddar, parmesan, and gorgonzola.",21.99,Pizzas
+51,Buffalo Chicken Pizza,"Spicy buffalo chicken pieces with a ranch drizzle.",22.99,Pizzas
+52,Mexican Pizza,"Chorizo, jalapenos, onions, capsicum, and corn chips on top.",23.99,Pizzas
+53,Prosciutto & Arugula Pizza,"Tomato base with fresh prosciutto and rocket added after baking.",24.99,Pizzas
+54,Mushroom & Truffle Pizza,"Wild mushrooms with truffle oil and thyme.",23.99,Pizzas
+55,Calzone (Meat),"Folded pizza stuffed with ham, salami, and mozzarella.",20.99,Pizzas
+56,Calzone (Veggie),"Folded pizza stuffed with spinach, ricotta, and pumpkin.",19.99,Pizzas
+57,Gluten-Free Margherita,"Our classic Margherita on a cauliflower gluten-free crust.",19.99,Pizzas
+58,Gluten-Free Veggie,"Veggie toppings on a cauliflower gluten-free crust.",23.99,Pizzas
+59,Lamb & Feta Pizza,"Roast lamb pieces with feta cheese, olives, and mint yogurt.",25.99,Pizzas
+60,Potato & Rosemary Pizza,"Thinly sliced potato, rosemary, garlic, and sea salt.",20.99,Pizzas
+61,Chicken Parma,"Classic crumbed chicken breast topped with napoli, ham, and cheese. Served with chips & salad.",24.99,Aussie Pub Classics
+62,Aloha Parma,"Crumbed chicken topped with napoli, ham, cheese, and pineapple.",25.99,Aussie Pub Classics
+63,Mexican Parma,"Crumbed chicken topped with salsa, jalapeños, cheese, and guacamole.",26.99,Aussie Pub Classics
+64,Aussie Parma,"Crumbed chicken topped with BBQ sauce, bacon, fried egg, and cheese.",27.99,Aussie Pub Classics
+65,Eggplant Parma,"Crumbed eggplant topped with napoli and cheese (Vegetarian).",22.99,Aussie Pub Classics
+66,Fish & Chips,"Beer battered barramundi fillets served with chips, salad, and tartare sauce.",23.99,Aussie Pub Classics
+67,Grilled Barramundi,"Fresh grilled barramundi served with mashed potato and seasonal greens.",26.99,Aussie Pub Classics
+68,Salt & Pepper Calamari,"Tender squid pieces lightly dusted in salt and pepper flour, flash fried.",22.99,Aussie Pub Classics
+69,Fisherman's Basket,"Assortment of battered fish, prawns, calamari, and scallops with chips.",29.99,Aussie Pub Classics
+70,Rump Steak (300g),"Grain-fed rump steak cooked to your liking, served with chips and salad.",28.99,Aussie Pub Classics
+71,Porterhouse Steak (300g),"Premium porterhouse steak served with veggies and mash.",32.99,Aussie Pub Classics
+72,Scotch Fillet (300g),"Juicy scotch fillet served with chips and salad.",34.99,Aussie Pub Classics
+73,Surf & Turf,"Rump steak topped with garlic prawns and creamy garlic sauce.",36.99,Aussie Pub Classics
+74,Lamb Cutlets,"Crumbed lamb cutlets (3) served with mash and gravy.",29.99,Aussie Pub Classics
+75,Roast of the Day,"Classic roast beef or pork with roast vegetables and gravy.",21.99,Aussie Pub Classics
+76,Bangers & Mash,"Thick pork sausages served with creamy mash, peas, and onion gravy.",19.99,Aussie Pub Classics
+77,Beef & Guinness Pie,"Chunky beef slow-cooked in stout, encased in pastry. Served with mash.",21.99,Aussie Pub Classics
+78,Chunky Pepper Steak Pie,"Tender steak in a peppercorn gravy pastry shell.",21.99,Aussie Pub Classics
+79,Smashed Avo,"Smashed avocado on sourdough toast with feta, cherry tomatoes, and dukkah.",18.99,Aussie Pub Classics
+80,Big Brekky,"Eggs, bacon, sausage, mushroom, tomato, hash brown, and toast.",22.99,Aussie Pub Classics
+81,Eggs Benedict,"Poached eggs and ham on sourdough with hollandaise sauce.",19.99,Aussie Pub Classics
+82,Pork Ribs (Half Rack),"Slow-cooked BBQ pork ribs served with slaw and chips.",28.99,Aussie Pub Classics
+83,Pork Ribs (Full Rack),"A massive serving of BBQ pork ribs served with slaw and chips.",38.99,Aussie Pub Classics
+84,Spaghetti Bolognese,"Traditional beef bolognese sauce tossed with spaghetti and parmesan.",18.99,Aussie Pub Classics
+85,Chicken Carbonara,"Creamy garlic sauce with bacon, chicken, and egg.",19.99,Aussie Pub Classics
+86,Chicken Burrito,"Grilled chicken, cilantro-lime rice, black beans, salsa, cheese, and sour cream.",11.95,Mexican Specialties
+87,Steak Burrito,"Tender grilled steak, cilantro-lime rice, pinto beans, salsa, and cheese.",12.95,Mexican Specialties
+88,Carnitas Burrito,"Slow-cooked pork, rice, beans, pico de gallo, and cheese.",12.45,Mexican Specialties
+89,Veggie Burrito,"Sautéed bell peppers, onions, black beans, rice, corn salsa, and guacamole.",10.95,Mexican Specialties
+90,Fish Burrito,"Battered fish, cabbage slaw, rice, and chipotle crema.",13.45,Mexican Specialties
+91,Shrimp Burrito,"Grilled shrimp, rice, cabbage, and mango salsa.",13.95,Mexican Specialties
+92,Breakfast Burrito,"Scrambled eggs, chorizo, potato, and cheese.",11.45,Mexican Specialties
+93,California Burrito,"Steak, cheese, salsa, guacamole, and french fries inside the wrap.",13.95,Mexican Specialties
+94,Chicken Bowl,"All the fillings of a burrito, served in a bowl without the tortilla.",11.95,Mexican Specialties
+95,Steak Bowl,"Grilled steak served over a bed of rice and beans with your choice of toppings.",12.95,Mexican Specialties
+96,Carnitas Bowl,"Slow-cooked pork served over rice and beans.",12.45,Mexican Specialties
+97,Veggie Bowl,"Grilled veggies, guacamole, beans, and rice.",10.95,Mexican Specialties
+98,Chicken Tacos,"Three soft flour tortillas filled with grilled chicken, lettuce, cheese, and salsa.",10.95,Mexican Specialties
+99,Steak Tacos,"Three soft flour tortillas with grilled steak, onions, and cilantro.",11.95,Mexican Specialties
+100,Carnitas Tacos,"Three soft corn tortillas with pork, onions, and cilantro.",11.45,Mexican Specialties
+101,Fish Tacos (Baja Style),"Three tortillas with battered fish, cabbage, and creamy sauce.",12.95,Mexican Specialties
+102,Shrimp Tacos,"Three tortillas with grilled chili lime shrimp and slaw.",13.45,Mexican Specialties
+103,Crispy Beef Tacos,"Three hard shell tacos with ground beef, lettuce, and cheese.",10.95,Mexican Specialties
+104,Chicken Quesadilla,"Flour tortilla filled with melted cheese and chicken. Served with salsa.",10.95,Mexican Specialties
+105,Steak Quesadilla,"Flour tortilla filled with melted cheese and steak.",11.95,Mexican Specialties
+106,Cheese Quesadilla,"Simple flour tortilla with a blend of melted cheeses.",8.95,Mexican Specialties
+107,Veggie Quesadilla,"Cheese, grilled peppers, onions, and mushrooms.",10.45,Mexican Specialties
+108,Nachos Supreme,"Corn chips piled high with cheese, beef chili, sour cream, and guacamole.",14.99,Mexican Specialties
+109,Chicken Nachos,"Corn chips with grilled chicken, queso, jalapenos, and salsa.",14.49,Mexican Specialties
+110,Veggie Nachos,"Corn chips with beans, queso, olives, and jalapenos.",12.99,Mexican Specialties
+111,Fajitas - Chicken,"Sizzling platter of grilled chicken, peppers, and onions with tortillas.",18.99,Mexican Specialties
+112,Fajitas - Steak,"Sizzling platter of grilled steak, peppers, and onions with tortillas.",20.99,Mexican Specialties
+113,Fajitas - Combo,"Sizzling platter of chicken and steak.",21.99,Mexican Specialties
+114,Chimichanga (Chicken),"Deep-fried burrito topped with queso sauce.",13.99,Mexican Specialties
+115,Chimichanga (Beef),"Deep-fried burrito filled with beef and cheese.",14.99,Mexican Specialties
+116,Taquitos,"Rolled crispy corn tortillas filled with chicken. Served with guacamole.",10.99,Mexican Specialties
+117,Enchiladas (Cheese),"Three corn tortillas rolled with cheese and topped with red sauce.",12.99,Mexican Specialties
+118,Enchiladas (Chicken),"Three corn tortillas rolled with chicken and topped with green tomatillo sauce.",13.99,Mexican Specialties
+119,Mexican Street Corn,"Corn on the cob slathered in mayo, cotija cheese, and chili powder.",5.99,Mexican Specialties
+120,Churros,"Fried dough pastries dusted in cinnamon sugar, served with chocolate dip.",6.99,Mexican Specialties
+121,Classic French Fries,"Golden, crispy, and lightly salted.",4.99,Appetizers & Sides
+122,Large French Fries,"A basket size portion of our classic fries.",7.99,Appetizers & Sides
+123,Sweet Potato Fries,"Served with a side of chipotle aioli.",6.49,Appetizers & Sides
+124,Seasoned Wedges,"Thick potato wedges served with sour cream and sweet chili sauce.",8.99,Appetizers & Sides
+125,Loaded Wedges,"Wedges topped with crispy bacon and melted cheese.",10.99,Appetizers & Sides
+126,Onion Rings,"Thick-cut onion rings, battered and fried to perfection.",6.99,Appetizers & Sides
+127,Loaded Chili Cheese Fries,"Fries smothered in hearty beef chili and melted cheddar cheese.",9.99,Appetizers & Sides
+128,Cheesy Bacon Fries,"Fries topped with melted cheese sauce and bacon bits.",8.99,Appetizers & Sides
+129,Truffle Parmesan Fries,"Fries tossed in truffle oil and dusted with parmesan cheese.",8.49,Appetizers & Sides
+130,Gravy Chips,"Hot chips smothered in rich brown gravy.",7.49,Appetizers & Sides
+131,Garlic Bread,"Toasted baguette slices with garlic butter.",5.99,Appetizers & Sides
+132,Cheesy Garlic Bread,"Garlic bread topped with melted mozzarella.",7.99,Appetizers & Sides
+133,Buffalo Wings (6),"Classic spicy buffalo sauce. Served with ranch.",9.99,Appetizers & Sides
+134,Buffalo Wings (12),"Classic spicy buffalo sauce. Served with ranch.",16.99,Appetizers & Sides
+135,BBQ Wings (6),"Tossed in sweet and tangy BBQ sauce.",9.99,Appetizers & Sides
+136,Honey Soy Wings (6),"Tossed in a sticky honey soy glaze.",9.99,Appetizers & Sides
+137,Mozzarella Sticks,"Breaded cheese sticks served with marinara sauce.",8.99,Appetizers & Sides
+138,Jalapeño Poppers,"Breaded jalapeños stuffed with cream cheese.",9.49,Appetizers & Sides
+139,Mac & Cheese Bites,"Deep fried macaroni and cheese balls.",8.99,Appetizers & Sides
+140,Fried Pickles,"Battered pickle slices served with ranch dipping sauce.",7.99,Appetizers & Sides
+141,Potato Skins,"Loaded with bacon, cheese, and sour cream.",10.99,Appetizers & Sides
+142,Chips & Salsa,"Fresh tortilla chips with house-made salsa.",5.99,Appetizers & Sides
+143,Chips & Guacamole,"Tortilla chips served with handmade guacamole.",8.49,Appetizers & Sides
+144,Queso Dip,"Warm creamy cheese dip served with chips.",7.99,Appetizers & Sides
+145,Dim Sims (Fried),"3 Aussie style pork and cabbage dumplings, deep fried.",6.99,Appetizers & Sides
+146,Dim Sims (Steamed),"3 Aussie style pork and cabbage dumplings, steamed with soy sauce.",6.99,Appetizers & Sides
+147,Chiko Roll,"The legendary Aussie savoury roll, deep fried.",5.99,Appetizers & Sides
+148,Spring Rolls (Veg),"4 mini crispy vegetable spring rolls with sweet chili sauce.",7.99,Appetizers & Sides
+149,Caesar Salad,"Cos lettuce, bacon, parmesan, croutons, poached egg, and Caesar dressing.",14.99,Salads & Healthy Options
+150,Chicken Caesar Salad,"Our classic Caesar topped with grilled chicken breast.",18.99,Salads & Healthy Options
+151,Garden Salad,"Mixed greens, tomato, cucumber, onion, and vinaigrette.",10.99,Salads & Healthy Options
+152,Greek Salad,"Cucumber, tomato, olives, red onion, and feta cheese.",13.99,Salads & Healthy Options
+153,Thai Beef Salad,"Marinated beef strips, vermicelli noodles, coriander, mint, and chili lime dressing.",19.99,Salads & Healthy Options
+154,Grilled Chicken Salad,"Greens, avocado, cherry tomatoes, and grilled chicken.",17.99,Salads & Healthy Options
+155,Poke Bowl (Salmon),"Fresh salmon sashimi, brown rice, edamame, seaweed, and sesame dressing.",19.99,Salads & Healthy Options
+156,Poke Bowl (Tofu),"Marinated tofu, brown rice, avocado, cucumber, and slaw.",17.99,Salads & Healthy Options
+157,Roasted Pumpkin Salad,"Roast pumpkin, baby spinach, pine nuts, and feta.",16.99,Salads & Healthy Options
+158,Quinoa Salad,"Quinoa, black beans, corn, avocado, and lime dressing.",15.99,Salads & Healthy Options
+159,Caprese Salad,"Fresh tomato, buffalo mozzarella, basil, and balsamic glaze.",14.99,Salads & Healthy Options
+160,Calamari Salad,"Grilled calamari over a bed of rocket and parmesan.",18.99,Salads & Healthy Options
+161,Southwest Chicken Salad,"Spicy chicken, corn, beans, tortilla strips, and ranch.",17.99,Salads & Healthy Options
+162,Cobb Salad,"Chicken, bacon, egg, avocado, and blue cheese over greens.",18.99,Salads & Healthy Options
+163,Waldorf Salad,"Apples, celery, walnuts, and grapes in a light mayo dressing.",14.99,Salads & Healthy Options
+164,Coleslaw,"Creamy house-made cabbage and carrot slaw.",5.99,Salads & Healthy Options
+165,Steamed Vegetables,"Seasonal mix of steamed broccoli, carrots, and beans.",6.99,Salads & Healthy Options
+166,Side Salad,"Small portion of garden salad.",5.99,Salads & Healthy Options
+167,Mashed Potato,"Creamy buttery mash.",5.99,Salads & Healthy Options
+168,Beef Lasagna,"House-made layers of pasta, rich meat sauce, and creamy béchamel. Served with side salad.",21.99,Pasta & Risotto
+169,Vegetable Lasagna,"Roasted pumpkin, spinach, and ricotta layered with pasta and napoli sauce.",19.99,Pasta & Risotto
+170,Creamy Pesto Chicken,"Penne pasta tossed in basil pesto cream with grilled chicken and pine nuts.",22.99,Pasta & Risotto
+171,Spaghetti Marinara,"Fresh mussels, prawns, calamari, and fish tossed in a garlic white wine sauce.",26.99,Pasta & Risotto
+172,Prawn & Chorizo Linguine,"Tiger prawns and spicy chorizo in a chili garlic olive oil base.",25.99,Pasta & Risotto
+173,Beef Cheek Ragu,"Slow-cooked tender beef cheek tossed with pappardelle pasta and parmesan.",24.99,Pasta & Risotto
+174,Penne Arrabbiata,"Spicy tomato sugo with olives, chili, and fresh basil.",18.99,Pasta & Risotto
+175,Pumpkin Risotto,"Creamy arborio rice with roasted pumpkin, baby spinach, and feta cheese.",20.99,Pasta & Risotto
+176,Mushroom Risotto,"Wild mushrooms, truffle oil, and parmesan cheese.",21.99,Pasta & Risotto
+177,Gnocchi Gorgonzola,"Potato gnocchi in a rich creamy blue cheese sauce with walnuts.",22.99,Pasta & Risotto
+178,Spinach & Ricotta Ravioli,"Pasta parcels filled with spinach and cheese in a burnt butter sage sauce.",21.99,Pasta & Risotto
+179,Chicken Salt Fries,"Hot chips generously dusted with legendary Australian chicken salt.",5.49,Appetizers & Sides
+180,Haloumi Chips,"Fried haloumi cheese sticks with lemon wedge.",11.99,Appetizers & Sides
+181,Pavlova,"Traditional Aussie meringue topped with cream, passionfruit, and berries.",9.99,Drinks & Desserts
+182,Lamington,"Sponge cake dipped in chocolate and rolled in coconut. Served with cream.",7.99,Drinks & Desserts
+183,Sticky Date Pudding,"Warm pudding served with butterscotch sauce and vanilla ice cream.",10.99,Drinks & Desserts
+184,Fudge Brownie,"A rich warm chocolate fudge brownie with ice cream.",8.99,Drinks & Desserts
+185,New York Cheesecake,"Classic baked cheesecake with berry coulis.",9.99,Drinks & Desserts
+186,Vanilla Milkshake,"Thick and creamy shake made with real vanilla ice cream.",6.99,Drinks & Desserts
+187,Chocolate Milkshake,"Rich chocolate syrup blended with ice cream and milk.",6.99,Drinks & Desserts
+188,Strawberry Milkshake,"Sweet strawberry blend topped with whipped cream.",6.99,Drinks & Desserts
+189,Flat White,"Espresso with smooth microfoam milk (Aussie coffee staple).",4.50,Drinks & Desserts
+190,Cappuccino,"Espresso with frothed milk and chocolate dusting.",4.50,Drinks & Desserts
+191,Latte,"Espresso with steamed milk.",4.50,Drinks & Desserts
+192,Long Black,"Double shot espresso over hot water.",4.00,Drinks & Desserts
+193,Iced Coffee,"Chilled coffee poured over ice and milk, topped with ice cream and cream.",7.50,Drinks & Desserts
+194,Iced Chocolate,"Cold chocolate milk topped with ice cream and cream.",7.50,Drinks & Desserts
+195,Lemon Lime Bitters,"Refreshing mix of lemonade, lime cordial, and Angostura bitters.",5.50,Drinks & Desserts
+196,Bundaberg Ginger Beer,"Premium Australian brewed ginger beer.",5.50,Drinks & Desserts
+197,Coke,"375ml Can.",3.50,Drinks & Desserts
+198,Diet Coke,"375ml Can.",3.50,Drinks & Desserts
+199,Sprite,"375ml Can.",3.50,Drinks & Desserts
+200,Mt Franklin Water,"600ml Bottle.",3.00,Drinks & Desserts

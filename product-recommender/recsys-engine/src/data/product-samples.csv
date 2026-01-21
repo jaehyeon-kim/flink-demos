@@ -1,0 +1,9 @@
+product_id,name,description,price,category
+8,The Aussie Burger,"A true classic with beetroot, a fried egg, pineapple, bacon, cheese, lettuce, and tomato.",16.99,Burgers & Sandwiches
+42,The Aussie Pizza,"Tomato base topped with ham, bacon, onions, and a cracked egg in the center.",23.99,Pizzas
+61,Chicken Parma,"Classic crumbed chicken breast topped with napoli, ham, and cheese. Served with chips & salad.",24.99,Aussie Pub Classics
+101,Fish Tacos (Baja Style),"Three tortillas with battered fish, cabbage, and creamy sauce.",12.95,Mexican Specialties
+179,Chicken Salt Fries,"Hot chips generously dusted with legendary Australian chicken salt.",5.49,Appetizers & Sides
+153,Thai Beef Salad,"Marinated beef strips, vermicelli noodles, coriander, mint, and chili lime dressing.",19.99,Salads & Healthy Options
+173,Beef Cheek Ragu,"Slow-cooked tender beef cheek tossed with pappardelle pasta and parmesan.",24.99,Pasta & Risotto
+181,Pavlova,"Traditional Aussie meringue topped with cream, passionfruit, and berries.",9.99,Drinks & Desserts

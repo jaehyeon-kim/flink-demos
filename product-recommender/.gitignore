@@ -1,0 +1,5 @@
+recsys-engine/src/data/*.csv
+recsys-engine/src/data/*.pkl
+!recsys-engine/src/data/products.csv
+!recsys-engine/src/data/product-samples.csv
+!recsys-engine/src/data/world_pop.csv
