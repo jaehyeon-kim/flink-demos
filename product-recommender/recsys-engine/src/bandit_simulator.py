@@ -47,7 +47,7 @@ class TimeContextGenerator:
         }
 
 
-class ResponseGroundTruth:
+class GroundTruth:
     """
     The HIDDEN FORMULA (Ground Truth).
     Determines if a user clicks based on context.
@@ -97,7 +97,7 @@ class BanditSimulator:
 
         # Init helpers
         self.time_gen = TimeContextGenerator(fake)
-        self.ground_truth = ResponseGroundTruth()
+        self.ground_truth = GroundTruth()
 
         # Load data
         self.users = pd.read_csv(data_path / "user_features.csv").to_dict("records")
