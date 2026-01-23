@@ -17,40 +17,44 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_DIR = Path(sys.modules["__main__"].__file__).parent / "src" / "data"
 
 
+def standardize_ids(series):
+    return pd.to_numeric(series, errors="coerce").fillna(-1).astype(int).astype(str)
+
+
+def keep_numeric_and_id(df, id_col):
+    numeric_cols = df.select_dtypes(include=["number", "bool"]).columns.tolist()
+    if id_col not in numeric_cols:
+        numeric_cols.insert(0, id_col)
+    return df[numeric_cols]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Evaluate Recommendation Models")
-    # --- General ---
     parser.add_argument("--seed", type=int, default=1237, help="Random seed.")
     args = parser.parse_args()
 
     # Load Data
-    df_events = pd.read_csv(DATA_DIR / "event_features.csv")
+    df_log = pd.read_csv(DATA_DIR / "training_log.csv")
     df_items = pd.read_csv(DATA_DIR / "product_features.csv")
-    df_interactions = pd.read_csv(DATA_DIR / "interaction.csv")
 
     # Clean Data (Standardize IDs)
     uid, pid, response = "event_id", "product_id", "response"
+    df_log[uid] = standardize_ids(df_log[uid])
+    df_log[pid] = standardize_ids(df_log[pid])
+    df_items[pid] = standardize_ids(df_items[pid])
 
-    def standardize_ids(series):
-        return pd.to_numeric(series, errors="coerce").fillna(-1).astype(int).astype(str)
+    # Create User Features (Context)
+    #   - We must drop 'product_id' and 'response' so they aren't used as features (Leakage)
+    feature_cols = [c for c in df_log.columns if c not in [pid, response]]
+    df_user_features = df_log[feature_cols].copy()
+    df_user_features = keep_numeric_and_id(df_user_features, uid)
 
-    for df in [df_events, df_interactions]:
-        df[uid] = standardize_ids(df[uid])
-
-    for df in [df_items, df_interactions]:
-        df[pid] = standardize_ids(df[pid])
-
-    def keep_numeric_and_id(df, id_col):
-        numeric_cols = df.select_dtypes(include=["number", "bool"]).columns.tolist()
-        if id_col not in numeric_cols:
-            numeric_cols.insert(0, id_col)
-        return df[numeric_cols]
-
-    df_events = keep_numeric_and_id(df_events, uid)
+    # Clean Item Features
     df_items = keep_numeric_and_id(df_items, pid)
 
     # Split Data
-    train_df, test_df = train_test_split(df_interactions, test_size=0.2, shuffle=False)
+    # We split the interaction log by time (shuffle=False)
+    train_df, test_df = train_test_split(df_log, test_size=0.2, shuffle=False)
 
     # Define Metrics List
     # Set click_column to 'score'
@@ -96,7 +100,7 @@ def main():
         metrics=metrics,
         train_data=train_df,
         test_data=test_df,
-        user_features=df_events,
+        user_features=df_user_features,
         item_features=df_items,
         user_id_col=uid,
         item_id_col=pid,

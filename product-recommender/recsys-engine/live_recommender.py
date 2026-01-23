@@ -59,30 +59,29 @@ class LiveRecommender:
             arms=self.products, learning_policy=LearningPolicy.LinUCB(alpha=1.0)
         )
 
-    def warm_start(self):
+    def pretrain(self):
         """Trains the model on historical CSV data (Offline Replay)."""
-        logger.info("Warm starting model...")
+        logger.info("Pre-training model from history...")
 
-        events_path = self.data_path / "event_features.csv"
-        interactions_path = self.data_path / "interaction.csv"
-
+        # Updated to read the single merged log file
+        history_path = self.data_path / "training_log.csv"
         df_train = None
 
-        if events_path.exists() and interactions_path.exists():
-            df_events = pd.read_csv(events_path)
-            df_inter = pd.read_csv(interactions_path)
-            df_train = pd.merge(df_inter, df_events, on="event_id")
+        if history_path.exists():
+            df_train = pd.read_csv(history_path)
 
         if df_train is not None and not df_train.empty:
             decisions = df_train["product_id"].tolist()
             rewards = df_train["response"].tolist()
+
+            # Extract Contexts matching the schema
             contexts_df = df_train[self.feature_schema]
 
             self.model.fit(decisions=decisions, rewards=rewards, contexts=contexts_df)
-            logger.info(f"Model warm-started on {len(decisions)} events.")
+            logger.info(f"Model pre-trained on {len(decisions)} events.")
 
         else:
-            logger.warning("History files not found or empty. Initializing Cold Start.")
+            logger.warning("History file not found or empty. Initializing Cold Start.")
             empty_contexts = pd.DataFrame(columns=self.feature_schema)
             self.model.fit(decisions=[], rewards=[], contexts=empty_contexts)
 
@@ -120,7 +119,7 @@ def main():
     parser.add_argument(
         "--steps", type=int, default=20, help="Number of users to simulate"
     )
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seed", type=int, default=1237)
     # Note: Location args are no longer needed for generation, but kept for compatibility
     parser.add_argument("--country", type=str, default="Australia")
     parser.add_argument("--state", type=str, default="*")
@@ -152,7 +151,7 @@ def main():
     # Initialize Recommender
     recsys = LiveRecommender(data_path)
     recsys.load_artifacts()
-    recsys.warm_start()
+    recsys.pretrain()
 
     print(f"\n--- STARTING LIVE LOOP ({args.steps} visits) ---\n")
 
@@ -192,13 +191,13 @@ def main():
                 reward = 1
                 break
 
-        # G. Update Model
+        # Update Model
         recsys.update(full_context, chosen_item, reward)
 
         # Log with the SIMULATED time
         print(
-            f"User {str(user_obj.user_id).rjust(4, ' ')} ({user_obj.age} yo) @ {simulated_time.strftime('%a %H:%M')} "
-            f"-> Recs: {recommendations} -> Clicked: {chosen_item} ({'YES' if reward else 'NO'})"
+            f"User {str(user_obj.user_id).rjust(4, '0')} ({user_obj.age} yo) @ {simulated_time.strftime('%a %H:%M')} "
+            f"-> Recs: [{', '.join([str(r).rjust(3, '0') for r in recommendations])}] -> Clicked: {str(chosen_item).rjust(3, '0')} ({'✅' if reward else '❌'})"
         )
 
     print("\n--- END LOOP ---")

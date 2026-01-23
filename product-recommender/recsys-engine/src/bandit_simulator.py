@@ -111,8 +111,7 @@ class BanditSimulator:
     def generate_history(self, num_events: int, end_date_str: str):
         logger.info(f"Generating {num_events} events...")
 
-        event_rows = []
-        interaction_rows = []
+        rows = []
 
         for i in range(num_events):
             event_id = i + 1
@@ -124,32 +123,28 @@ class BanditSimulator:
             # Time Context
             time_ctx = self.time_gen.get_context(end_date_str=end_date_str)
 
-            # Combine Context
+            # Combine Context (User + Time)
             context_row = {
                 "event_id": event_id,
                 **{k: v for k, v in user.items() if k != "user_id"},
                 **time_ctx,
             }
 
-            # Make Response
+            # Make Response (Ground Truth)
             response = self.ground_truth.will_click(context_row, item, self.fake)
 
-            # Append
-            event_rows.append(context_row)
-            interaction_rows.append(
-                {
-                    "event_id": event_id,
-                    "product_id": item["product_id"],
-                    "response": response,
-                }
-            )
+            # Merge everything into one row
+            full_row = {
+                **context_row,
+                "product_id": item["product_id"],
+                "response": response,
+            }
+            rows.append(full_row)
 
-        # Save
-        df_events = pd.DataFrame(event_rows)
-        df_interactions = pd.DataFrame(interaction_rows)
+        # Save Single File
+        df = pd.DataFrame(rows)
+        output_path = self.data_path / "training_log.csv"
+        df.to_csv(output_path, index=False)
 
-        df_events.to_csv(self.data_path / "event_features.csv", index=False)
-        df_interactions.to_csv(self.data_path / "interaction.csv", index=False)
-
-        logger.info(f"Done. Saved to {self.data_path}/")
-        logger.info(f"Avg Click Rate: {df_interactions['response'].mean():.2%}")
+        logger.info(f"Done. Saved to {output_path}")
+        logger.info(f"Avg Click Rate: {df['response'].mean():.2%}")
