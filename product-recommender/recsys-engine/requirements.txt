@@ -1,5 +1,0 @@
-faker
-scikit-learn
-pandas
-textwiser
-mab2rec
