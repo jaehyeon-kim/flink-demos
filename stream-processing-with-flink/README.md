@@ -1,4 +1,4 @@
-# Stream Processing with Flink in Flink
+# Stream Processing with Flink in Kotlin
 
 This project contains Kotlin implementations of examples for learning Apache Flink, inspired by the [`streaming-with-flink` Scala](https://github.com/streaming-with-flink/examples-scala) project.
 
@@ -59,3 +59,11 @@ To execute all unit tests in the project, use the `test` task.
 ```
 
 A test report will be generated at `build/reports/tests/test/index.html`.
+
+## Posts
+
+- [Stream Processing with Flink in Kotlin](https://jaehyeon.me/blog/2025-12-10-streaming-processing-with-flink-in-kotlin/)
+
+## Back to the repository
+
+[flink-demos](../README.md)

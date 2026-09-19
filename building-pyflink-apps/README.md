@@ -125,3 +125,18 @@ docker exec jobmanager /opt/flink/bin/flink run \
 - [Intro to the Python DataStream API](https://nightlies.apache.org/flink/flink-docs-release-1.17/docs/dev/python/datastream/intro_to_datastream_api/)
 - [Flink DataStream API Programming Guide](https://nightlies.apache.org/flink/flink-docs-release-1.17/docs/dev/datastream/overview/)
 - [All You Need to Know About PyFlink](https://www.alibabacloud.com/blog/all-you-need-to-know-about-pyflink_600306)
+
+## Posts
+
+- [Building Apache Flink Applications in Python](https://jaehyeon.me/blog/2023-10-19-build-pyflink-apps/)
+
+## Back to the repository
+
+[flink-demos](../README.md)
+
+## Bitnami images
+
+Bitnami's public Docker images have been moved to the [Bitnami Legacy](https://hub.docker.com/u/bitnamilegacy) repository. Update the image references in `docker-compose.yml` accordingly:
+
+- `bitnami/kafka:2.8.1` becomes `bitnamilegacy/kafka:2.8.1`
+- `bitnami/zookeeper:3.5` becomes `bitnamilegacy/zookeeper:3.5`

@@ -66,3 +66,11 @@ quit;
 ```
 
 ![](./img/sql-client.gif#center)
+
+### Posts
+
+- [Run Flink SQL Cookbook in Docker](https://jaehyeon.me/blog/2025-04-15-sql-cookbook/)
+
+### Back to the repository
+
+[flink-demos](../README.md)

@@ -40,3 +40,14 @@ python src/chapter6/process_function_timers.py
 # Run an example from Chapter 7
 python src/chapter7/keyed_state_function.py
 ```
+
+## Back to the repository
+
+[flink-demos](../README.md)
+
+## Bitnami images
+
+Bitnami's public Docker images have been moved to the [Bitnami Legacy](https://hub.docker.com/u/bitnamilegacy) repository. Update the image references in `docker-compose.yml` accordingly:
+
+- `bitnami/kafka:2.8.1` becomes `bitnamilegacy/kafka:2.8.1`
+- `bitnami/zookeeper:3.5` becomes `bitnamilegacy/zookeeper:3.5`
